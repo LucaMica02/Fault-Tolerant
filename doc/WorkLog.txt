@@ -1,0 +1,9 @@
+Intial Period:
+    - Approfondito allreduce 
+    - Approfondito e ragionato su Erasure Coding 
+    - Scoperto ULFM
+    - Fatto funzionare ULFM con docker 
+
+17 Marzo - 24 Marzo: 
+    - Recursive doubling fault tolerante 
+

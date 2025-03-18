@@ -1,0 +1,23 @@
+Erasure coding (EC) è un metodo utilizzato nell'archiviazione dati e nei sistemi 
+distribuiti per fornire tolleranza agli errori e ridondanza, utilizzando al contempo 
+lo spazio di archiviazione in modo efficiente. Suddivide i dati in frammenti più
+piccoli, li codifica con ridondanza aggiuntiva e li distribuisce su più nodi di 
+archiviazione. Ciò garantisce che i dati possano essere ricostruiti anche se alcuni 
+frammenti vengono persi o danneggiati.
+
+Come applicarlo a Vector Halving per la Allreduce?
+1 - Calcolo iniziale e distribuzione
+2 - Aggiornamento ad ogni passo
+3 - Se notifico fault ricostruisco array 
+
+Osservazioni:
+- Parità occupa n/2 spazio
+- Va ricalcolata ad ogni passo
+
+Idea:
+- Calcolarla all'inizio e conservarla in un nodo esterno
+- Conoscendo l'operazione aggiornarla ad ogni passo 
+
+Problema:
+- Usata per perdita parziale dei dati
+- Piuttosto che calcolare vettore iniziale di parità calcolo direttamente il risultato
