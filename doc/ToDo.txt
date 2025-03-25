@@ -1,6 +1,0 @@
-- riguardare recursive doubling e farlo generico
-- iniziare a testare resilienza ai fault
-
-# NEXT CALL [25 March]
-OBB:
-    - Recursive Doubling Generico Resistente ai fault completo

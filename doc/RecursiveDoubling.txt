@@ -1,19 +1,5 @@
 OBB: Recursive Doubling Allreduce Fault Tolerante 
 
-1. Implementa Recursive Doubling Allreduce semplificata che funziona 
-2. Implementa detection del failure 
-3. Scoprire chi è fallito
-4. Recovery dei dati
-    4.1 Shrink
-        - Rimuovi processi falliti
-        - Continua con recursive doubling tra la potenza di due più vicina dei sopravvissuti 
-    4.2 Non Shrink
-        - Spwana nuovo processo
-        - Aggiusta il comunicatore
-5. Concludere la collettiva
-    5.1 Renderla generica 
-6. Testing
-
 ## Shrink [Assumiamo solo un rank fail {proc con rank = k}]
 * d = distance
 * allo step i, d processi condividono gli stessi dati
@@ -34,11 +20,50 @@ OBB: Recursive Doubling Allreduce Fault Tolerante
 - i = 1, d = 2 -> 1,3  4,5  8,9  12,13
 - i = 2, d = 4 -> 0,1,3,4  8,9,10,11
 
-# Creare un nuovo comunicatore
-1. array di rank che voglio
-2. creo un nuovo gruppo MPI_Group_incl
-3. creo il comunicatore
-- p' processi saranno nel nuovo comunicatore e continuano a lavorare 
-- alla fine mandano il risultato
+Pointer --> debuggare perche processi attivi muoiono
 
-* Gestione più fault insieme
+## Report Algoritmo Recursive Doubling Fault Tolerante 
+- Ogni processo conserva informazioni sui processi attivi e inattivi 
+- Uso due comunicatori uno globale e uno per gli attivi
+- Tutti i processi entrano nella computazione della recursive doubling 
+- I processi attivi computano, gli altri osservano 
+- Alla fine di ogni passo ho una barriera che viene usata per notificare i fault [comm globale]
+- Ad ogni passo prima di fare sendrecv vedo se ho avuto un errore al passo precedente 
+- Se si chiamo errhandler
+    - Controllo fault su comunicatore globale e lo aggiusto, ma mantengo il vecchio
+        comunicatore globale*
+    - Se è fallito un rank inattivo sistemo la struttura inactive_ranks e conto i rank 
+        inattivi che sono falliti*
+    - Se è fallito un rank attivo
+        - Tutti i nodi controllano chi è fallito nel comunicatore attivo*
+            - Se abbiamo abbastanza nodi inattivi
+                - Mi calcolo: 
+                    - Chi deve svegliare nodo inattivo*
+                    - Chi deve inviare dati al processo corrotto*
+                    - Chi è corrotto e deve ricevere i dati*
+                    - Chi è inattivo e deve essere svegliato*
+                    * Di base è il nodo precedente a meno che non è il primo del blocco
+            - Altrimenti
+                - Mi calcolo la potenza di due minore più vicina*
+                - Scelgo i rank che saranno attivi*
+                * tuple da d dati a blocchi di d*2 con nuovo d
+            - Creo nuovo comunicatore degli attivi [attraverso old_comm]*
+            - Aggiusto i dati se necessario mandando i dati corretti ai processi
+                che hanno i dati corrotti*
+    - Alla fine 
+        - Aggiusto la struct in base ai nodi falliti*
+        * struct relativa al comunicatore globale -> rank-- per ogni rank'
+            tale che rank > rank'
+        - Poi calcolano se sono ancora un nodo inattivo o no*
+- Continuo con la recursive doubling
+- Quando finisce l'algoritmo
+- Gli inattivi aspettano che un attivo gli manda il risultato*
+- Gli attivi con rank relativo a comunicatore attivo < numero di inattivi mandano
+    risultato agli inattivi*
+- Alla fine tutti hanno il risultato corretto
+
+## Problemi principali
+- Errori Implementativi 
+- Errori Algoritmici 
+- Processi bloccati su send e recv 
+- Processi che hanno errori sul comunicatore e abortano
