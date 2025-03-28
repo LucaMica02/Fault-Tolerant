@@ -1,27 +1,5 @@
 OBB: Recursive Doubling Allreduce Fault Tolerante 
 
-## Shrink [Assumiamo solo un rank fail {proc con rank = k}]
-* d = distance
-* allo step i, d processi condividono gli stessi dati
-* proc con rank: k^d ha dati corrotti
-* p = numero di processi iniziale
-- Rimuovi processi falliti
-- Per ogni processo:
-    if rank > k: then rank--
-- Riduco alla potenza minore di due più vicina
-    -> p' = 2**[log2 p]
-
-# Come scelgo?
-* p = 16
-* rank 2 fail
-* p' = 8
-* tuple da d dati
-* a blocchi di d*2
-- i = 1, d = 2 -> 1,3  4,5  8,9  12,13
-- i = 2, d = 4 -> 0,1,3,4  8,9,10,11
-
-Pointer --> debuggare perche processi attivi muoiono
-
 ## Report Algoritmo Recursive Doubling Fault Tolerante 
 - Ogni processo conserva informazioni sui processi attivi e inattivi 
 - Uso due comunicatori uno globale e uno per gli attivi
@@ -31,36 +9,147 @@ Pointer --> debuggare perche processi attivi muoiono
 - Ad ogni passo prima di fare sendrecv vedo se ho avuto un errore al passo precedente 
 - Se si chiamo errhandler
     - Controllo fault su comunicatore globale e lo aggiusto, ma mantengo il vecchio
-        comunicatore globale*
+        comunicatore globale [1.0]
     - Se è fallito un rank inattivo sistemo la struttura inactive_ranks e conto i rank 
-        inattivi che sono falliti*
+        inattivi che sono falliti [2.0]
     - Se è fallito un rank attivo
-        - Tutti i nodi controllano chi è fallito nel comunicatore attivo*
-            - Se abbiamo abbastanza nodi inattivi
+        - Tutti i nodi controllano chi è fallito nel comunicatore attivo [3.0]
+            - Se abbiamo abbastanza nodi inattivi [3.1]
                 - Mi calcolo: 
-                    - Chi deve svegliare nodo inattivo*
-                    - Chi deve inviare dati al processo corrotto*
-                    - Chi è corrotto e deve ricevere i dati*
-                    - Chi è inattivo e deve essere svegliato*
-                    * Di base è il nodo precedente a meno che non è il primo del blocco
-            - Altrimenti
-                - Mi calcolo la potenza di due minore più vicina*
-                - Scelgo i rank che saranno attivi*
-                * tuple da d dati a blocchi di d*2 con nuovo d
-            - Creo nuovo comunicatore degli attivi [attraverso old_comm]*
+                    - Chi deve svegliare nodo inattivo [3.1.0]
+                    - Chi deve inviare dati al processo corrotto [3.1.1]
+                    - Chi è corrotto e deve ricevere i dati [3.1.2]
+                    - Chi è inattivo e deve essere svegliato [3.1.3]
+            - Altrimenti [3.2]
+                - Mi calcolo la potenza di due minore più vicina [3.2.0]
+                - Scelgo i rank che saranno attivi [3.2.1]
+            - Creo nuovo comunicatore degli attivi [attraverso old_comm] [3.3]
             - Aggiusto i dati se necessario mandando i dati corretti ai processi
-                che hanno i dati corrotti*
+                che hanno i dati corrotti [3.4]
     - Alla fine 
-        - Aggiusto la struct in base ai nodi falliti*
-        * struct relativa al comunicatore globale -> rank-- per ogni rank'
-            tale che rank > rank'
-        - Poi calcolano se sono ancora un nodo inattivo o no*
+        - Aggiusto la struct in base ai nodi falliti [4.0]
+        - Poi calcolano se sono ancora un nodo inattivo o no [5.0]
 - Continuo con la recursive doubling
 - Quando finisce l'algoritmo
-- Gli inattivi aspettano che un attivo gli manda il risultato*
-- Gli attivi con rank relativo a comunicatore attivo < numero di inattivi mandano
-    risultato agli inattivi*
+- Gli inattivi aspettano che un attivo gli manda il risultato [6.0]
+- Gli attivi mandano il risultato agli inattivi corrispettivi [7.0]
 - Alla fine tutti hanno il risultato corretto
+
+## Note 
+1.0 -> Mantengo il vecchio comunicatore cha ha fallito perchè i rank nella struttura data 
+    hanno il valore relativo al vecchio comunicatore e viene aggiustato solo alla fine.
+    Uso quindi il vecchio comunicatore per prendermi il gruppo dei rank quando quando Creo
+    il nuovo comunicatore degli attivi e per fare le send / recv tra i rank inattivi che 
+    devo svegliare e i rank attivi che devono svegliarli
+2.0 -> Abbiamo due step:
+    2.1 -> Check se rank inattivo è fallito 
+        2.2 -> Come primo punto controlliamo se esistono rank inattivi 
+        2.3 -> Poi per ogni rank fallito cerco una corrispondenza nell'array degli 
+            inattivi se la trovo ritorno 1 altrimenti ritorno 0
+    2.2 -> Sistema la struttura inactive_ranks: itero per ogni rank inattivo, e controllo
+        se è fallito, se si incremento un contatore altrimenti riscrivo il rank nell'array 
+        facendolo shiftare alla posizione (i - counter)
+3.0 -> Per ogni rank fallito cerco una corrispondenza nell'array degli 
+    attivi se la trovo ritorno 1 altrimenti ritorno 0
+    3.1 -> check se numero di nodi attivi falliti <= numero di rank inattivi sopravvissuti
+        3.1.0 -> Il nodo precedente al nodo fallito svegliarà il processo inattivo, e gli 
+            invierà poi i dati corretti, se il nodo fallito è il primo del blocco, sarà il 
+            nodo seguente a svegliare il processo in quanto il nodo precedente avrà dei dati
+            diversi rispetto al nodo che è fallito
+        3.1.1 -> Il nodo precedente al nodo corrotto gli invierà i dati corretti, se il
+            nodo corrotto è il primo del blocco, sarà il nodo seguente a inviargli i dati, 
+            per la stessa ragione descritta sopra
+        3.1.2 -> Se il nostro rank == (rank del nodo fallito ^ distance del passo precedente) 
+            abbiamo i dati corrotti e riceviamo i dati dal rank successivo se siamo i primi del
+            blocco, altrimenti dal rank precedente
+        3.1.3 -> I processi inattivi da svegliare vengono presi dalla coda dei rank degli 
+            inattivi, per cui ogni processo inattivo, calcola la sua posizione nell'array, 
+            se la nostra posizione è >= (numero totale di processi inattivi - numero di processi 
+            attivi falliti) allora ci aspettiamo di essere svegliati da un processo attivo
+    3.2 -> Altrimenti se numero di nodi attivi falliti > numero di rank inattivi sopravvissuti
+        3.2.0 -> Riduco alla potenza minore di due più vicina p' = 2**[log2 p], dove p è il numero
+            attuale di processi attivi sopravvissutie e p' sarà il nuovo numero di processi attivi
+        3.2.1 -> Scelgo p' processi che rimarranno attivi nel seguente modo:
+            itero sull'array dei processi attivi e scelgo ennuple da d processi a blocchi di d*2 con 
+            il nuovo valore di d, assicurandomi di non scegliere rank falliti nè corrotti
+    3.3 -> Il vecchio comunicatore old_comm ha i rank relativi alla struttura attuale data, uso quindi
+        quel comunicatore per prendermi il gruppo di tutti i rank, poi creo il gruppo dei sopravvissuti
+        a partire da active ranks che sarà un sottogruppo del gruppo originale e alla fine creo il 
+        nuovo comunicatore degli attivi 
+    3.4 -> Se siamo precedentemente entrati nel passo 3.1 sarà necessario svegliare uno o più processi
+        inattivi e inviare i dati sia a loro che ai rank che hanno dati corrotti, per cui in base alle 
+        flag calcolate al passo 3.1 chi deve svegliare e inviare dati farà le Send ai relativi ranks, 
+        mentre chi deve ricevere si metterà in attesa di ricevere i dati
+4.0 -> Per ogni processo attivo itero sui processi falliti, se il rank è maggiore del rank del processo 
+    fallito incremento un contatore k, alla fine decremento il valore del rank di k, in sintesi devo 
+    calcolare il nuovo valore del rank nel nuovo comunicatore globale, decrementando ogni rank di 1 per 
+    ogni processo fallito che ha rank minore, poi eseguo lo stesso procedimento per i processi inattivi
+5.0 -> Per calcolare se sono un processo attivo o inattivo nel nuovo comunicatore globale, mi prendo il 
+    rank relativo ad esso, poi vado a cercare se il mio rank è presente nell'array degli attivi, se si 
+    setto il valore di active a 1 ed esco, altrimenti alla fine avrò settato 0
+6.0 -> Se sei un rank inattivo, mettiti in attesa sulla recv di ricever il risultato finale, settiamo 
+    il comunicatore globale come quello di riferimento per la chiamata e la flag MPI_ANY_SOURCE che 
+    ci permetterà di ricevere da qualunque nodo attivo ci invierà il risultato
+7.0 -> Se sei attivo e il tuo rank i relativo al comunicatore degli attivi è minore del numero totale 
+    di rank inattivi allora farai la Send al rank i-esimo della struttura degli inattivi
+
+## Edge cases
+- Errori diversi da processo fallito 
+    -> Quando intercetto un errore mi assicuro che l'errore sia l'intero 75, prima di 
+        gestirlo, se dovesse essere diverso, aborto tutto il comunicatore globale
+        (Warning: 75 non è un errore di MPI Standard)
+- Situazione in cui ho troppi fault per il passo in cui mi trovo 
+    -> All'i-esimo passo avremo distance = 2^i; ovvero i rank a blocchi di distance size 
+        hanno gli stessi dati per cui possiamo supportare failure a meno che non abbiamo 
+        tutti i processi di un blocco che sono falliti
+    -> Possiamo estendere questa situazione, i blocchi comunicano a coppie ad esempio al passo 1
+        con distance = 2 i primi due processi (0,1) comunicano con i processi (2,3), (4,5) con (6,7)
+        e così via, questo significa che la comunicazione avviene a blocchi di distance * 2 dati, se 
+        in un blocco di comunicazione abbiamo che tutti i processi sono falliti oppure hanno dati corrotti
+        dovremmo far comunicare coloro che hanno i dati corrotti per avere i dati giusti, ma per 
+        semplicità non considero questo caso e se succede aborto il programma.
+        es: distance = 2; abbiamo P = 0,1,2,3; 0 <-> 2; 1 <-> 3; se falliscono 0 e 3, 2 e 1 avranno dati 
+        corrotti, potremmo recuperare ancora il risultato finale facendo comunicare 1 <-> 2; ma per il 
+        momento non considero questa casistica e siccome nel blocco di comunicazione che è fatto da 4 
+        processi 2 sono falliti e 2 hanno dati corrotti, abortisco
+- Failure all'interno dell'errhanlder
+    -> Quando entro nell errhandler imposto la flag MPI_ERRORS_ARE_FATAL come errhandler, 
+        se avvengono dei fault all'interno dell'errhandler tutti i processi vengono abortiti
+        prima di uscire dall'errhandler reimposto la flag MPI_ERRORS_RETURN che mi permette 
+        nuovamente di gestire gli errori che avvengono nella recursive doubling
+
+## Generalizzazione con p non potenza di 2
+- Calcola p' minore potenza di 2 piu vicina
+- I rank >= p' si segnano come inattivi 
+- rank inattivi mandano dati ai corrispettivi attivi: i-esimi inattivo 
+    manda a i-esimo attivo, per come viene calcolato p' abbiamo che 
+    numero di rank inattivi < numero di rank attivi
+- Funziona ma non sempre
+
+## Problema da risolvere:
+- Quando un rank muore o ha dati corrotti il precedente è incaricato di inviargli i nuovi 
+    dati, a meno che non sia primo del blocco, in quel caso l'incaricato è il successivo, ma 
+    cosa fare se più rank conseguitivi muoiono? 
+    es: 0 1 2 3 4 5 6 7, con distance = 4, abbiamo quindi le seguenti comunicazioni
+        -->  0 <-> 4, 1 <-> 5, 2 <-> 6, 3 <-> 7; 
+    consideriamo che muoiono: 1,2 di conseguenza 5 e 6 avranno dati corrotti, non entriamo
+    in nessun edge case che ci fa abortire e possiamo continuare, qual'è il problema? 
+    immaginiamo di avere i rank 8, 9 inattivi in attesa di essere svegliati, rank 0 sarà 
+    incaricato di svegliare 9, ma nessuno è incaricato di svegliare 8, in quanto il rank 
+    precedente a 2, ovvero 1, è morto;
+- Soluzione ideale: il processo inattivo che viene svegliato prende a tutti gli effetti il 
+    posto del nuovo e controlla lui stesso se a catena deve svegliare qualcuno: 
+    - processi inattivi si calcolano wake_up = inactive_count - pos; 
+    - quando itero sugli inattivi falliti mi calcolo la posizione relativa, ovvero se è il 
+    fallito numero 1,2,3 e cosi via tra gli attivi
+    - nei check per svegliare o inviare dati aggiungo:
+    if (rank fallito && posizione del fallito == wake_up)
+    - mi metto in attesa di essere svegliato se (wake_up <= numero di attivi falliti)
+    * fare esempio visivo
+
+## Osservazione
+- Il grande problema è se abbiamo comportamenti in cui il programma si blocca oppure 
+    termina con dati sbagliati, finchè negli edge cases abortiamo il programma poco male
 
 ## Problemi principali
 - Errori Implementativi 
