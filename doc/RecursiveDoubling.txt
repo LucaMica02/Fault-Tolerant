@@ -124,28 +124,23 @@ OBB: Recursive Doubling Allreduce Fault Tolerante
 - rank inattivi mandano dati ai corrispettivi attivi: i-esimi inattivo 
     manda a i-esimo attivo, per come viene calcolato p' abbiamo che 
     numero di rank inattivi < numero di rank attivi
-- Funziona ma non sempre
 
 ## Problema da risolvere:
-- Quando un rank muore o ha dati corrotti il precedente è incaricato di inviargli i nuovi 
-    dati, a meno che non sia primo del blocco, in quel caso l'incaricato è il successivo, ma 
-    cosa fare se più rank conseguitivi muoiono? 
-    es: 0 1 2 3 4 5 6 7, con distance = 4, abbiamo quindi le seguenti comunicazioni
-        -->  0 <-> 4, 1 <-> 5, 2 <-> 6, 3 <-> 7; 
-    consideriamo che muoiono: 1,2 di conseguenza 5 e 6 avranno dati corrotti, non entriamo
-    in nessun edge case che ci fa abortire e possiamo continuare, qual'è il problema? 
-    immaginiamo di avere i rank 8, 9 inattivi in attesa di essere svegliati, rank 0 sarà 
-    incaricato di svegliare 9, ma nessuno è incaricato di svegliare 8, in quanto il rank 
-    precedente a 2, ovvero 1, è morto;
-- Soluzione ideale: il processo inattivo che viene svegliato prende a tutti gli effetti il 
-    posto del nuovo e controlla lui stesso se a catena deve svegliare qualcuno: 
-    - processi inattivi si calcolano wake_up = inactive_count - pos; 
-    - quando itero sugli inattivi falliti mi calcolo la posizione relativa, ovvero se è il 
-    fallito numero 1,2,3 e cosi via tra gli attivi
-    - nei check per svegliare o inviare dati aggiungo:
-    if (rank fallito && posizione del fallito == wake_up)
-    - mi metto in attesa di essere svegliato se (wake_up <= numero di attivi falliti)
-    * fare esempio visivo
+- Problema generale in svegliare rank che muore o mandare dati a rank corrotto, non sto considerando 
+    il caso in cui colui che manderà i dati è corrotto e avrò dati sbagliati oppure è morto e non 
+    esisterà il rank incaricato ergo cui non riceverò mai i miei dati o non verrà mai svegliato il 
+    nuovo processo.
+- Come risolvo?
+    Centralizzo il processo, all'interno di un blocco di dati c'è almeno un processo che avrà i dati corretti 
+    lo identifico e lui sarà incaricato di svegliare i processi inattivi e mandare i dati ai processi corrotti 
+    per conto di quel blocco.
+- Steps:
+    1. Creo array block_masters di dimensione active_counts / d 
+    2. Itero sugli attivi, e cerco il primo rank sano del blocco 
+    3. Se sei un rank master itera sugli attivi
+        3.1 se i è fallito e (i / d) == (rank / d) devi rimpiazzare i
+        3.2 se i è corrotto e (i / d) == (rank / d) devi inviare dati corretti a i
+    4. Se non sei un rank master devi calcolare se hai i dati corrotti 
 
 ## Osservazione
 - Il grande problema è se abbiamo comportamenti in cui il programma si blocca oppure 

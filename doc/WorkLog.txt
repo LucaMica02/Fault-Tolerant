@@ -1,18 +1,3 @@
-# DATA 
-    0 * * 3 * 5 6 7
-    * 9 10 11
-# KILL
-    2
-    1 - 4 - 8 - 12
-
-0 -> 10
-1 -> 12
-3 -> 8
--> 9
--> 10 
--> 11
--> 12
-
 Intial Period:
     - Approfondito allreduce 
     - Approfondito e ragionato su Erasure Coding 
@@ -29,15 +14,18 @@ Intial Period:
     - Scrittura documentazione algoritmo
     - Review OCHO
     - Gestione edge cases 
-    - debug
+    - Generalizzare con p non potenza di 2
+    - Centralizzato processo di sveglia inattivi / send ai rank corrotti (in corso)
+
+1 Aprile - 8 Aprile
 
 NEXT:
-    - Generalizzare la collettiva [Ven]
+    - Generalizzare la collettiva 
         - Valida con p non potenza di 2 * 
         - Valida per tipi diversi
         - Valida per operazioni diverse
-    - Debug [Lun]
-    - Testare [Lun]
-    - Versione che spwana nuovo processo
-    - Documento x prof + code review [Lun]
+        - Considera commutatività / associatività
+    - Debug 
+        - Centralizzazion per blocco send dei dati
+    - Testare 
     - Ottimizzazione + Memory Leak
