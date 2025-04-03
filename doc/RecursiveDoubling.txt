@@ -125,7 +125,7 @@ OBB: Recursive Doubling Allreduce Fault Tolerante
     manda a i-esimo attivo, per come viene calcolato p' abbiamo che 
     numero di rank inattivi < numero di rank attivi
 
-## Problema da risolvere:
+## Centralizzazione recovery blocco:
 - Problema generale in svegliare rank che muore o mandare dati a rank corrotto, non sto considerando 
     il caso in cui colui che manderà i dati è corrotto e avrò dati sbagliati oppure è morto e non 
     esisterà il rank incaricato ergo cui non riceverò mai i miei dati o non verrà mai svegliato il 
