@@ -29,6 +29,10 @@ Intial Period:
 1 Aprile - 8 Aprile
     - Centralizzazione per blocco send dei dati
     - Fixato passo 3.2
+    - Creato script per i test
+    - Prendere parametri in input
+    - Script per randomizzare parametri
+    - Checker validità + Salvataggio dati in log file
 
 NEXT:
     - Generalizzare la collettiva 

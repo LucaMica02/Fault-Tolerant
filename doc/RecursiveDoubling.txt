@@ -151,3 +151,37 @@ OBB: Recursive Doubling Allreduce Fault Tolerante
 - Errori Algoritmici 
 - Processi bloccati su send e recv 
 - Processi che hanno errori sul comunicatore e abortano
+
+## Testing
+Idea:
+- risultato esatto 
+    - N == n di righe in mpi_output - killed
+    - Tutti i processi hanno lo stesso risultato 
+    - Il risultato è corretto 
+- abort programma 
+    - Cerca [MPI_ABORT, MPI_ERRORS_ARE_FATAL]
+- risultato sbagliato 
+    - N == n di righe in mpi_output - killed 
+    - Processi hanno risultati diversi
+    - Il risultato è sbagliato 
+- errori [segfault] 
+    - Cerca [Segmentation fault, (core dumped)]
+- deadlock
+    - Viene raggiunto il timeout
+
+Steps:
+- passare parametri da input 
+    - n di processi * 
+    - sleep time *
+    - % killing * 
+    - buf_size *
+- Randomizzare i parametri * 
+- Checker validità * 
+- Salvare dati [log] *
+- Migliorare Range randomici 
+- Equazione per far durare run tra 5 e 10 sec
+- Analisi Statistiche
+- Testarlo sul cluster
+
+* mv log.csv ../../../../../../mnt/c/Users/lucam/Drive/Desktop
+* Lanciarlo da src 

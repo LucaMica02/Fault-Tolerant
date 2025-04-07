@@ -1,0 +1,143 @@
+Generated values:
+N = 17
+DELAY = 1
+THRESHOLD = 58
+BUF_SIZE = 10015200
+TIMEOUT = 30
+NBC_Progress: an error 75 was found during schedule 0x7f94bef5ad10 at row-offset 196 - aborting the schedule
+
+Error in NBC_Start_round() (-1)
+Error in NBC_Start_round() (-1)
+NBC_Progress: an error 75 was found during schedule 0x7f4ee840dcf0 at row-offset 196 - aborting the schedule
+
+Error in NBC_Start_round() (-1)
+Error in NBC_Start_round() (-1)
+[e32e76ae18ee:00000] *** An error occurred in MPI_Comm_create
+[e32e76ae18ee:00000] *** reported by process [3880124417,13]
+[e32e76ae18ee:00000] *** on communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+[e32e76ae18ee:00000] *** MPI_ERR_OTHER: known error not in list
+[e32e76ae18ee:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[e32e76ae18ee:00000] ***    and MPI will try to terminate your MPI job as well)
+[e32e76ae18ee:00000] *** An error occurred in MPI_Comm_create
+[e32e76ae18ee:00000] *** reported by process [3880124417,0]
+[e32e76ae18ee:00000] *** on communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+[e32e76ae18ee:00000] *** MPI_ERR_OTHER: known error not in list
+[e32e76ae18ee:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[e32e76ae18ee:00000] ***    and MPI will try to terminate your MPI job as well)
+NBC_Progress: an error 75 was found during schedule 0x7fe8e2d10d10 at row-offset 0 - aborting the schedule
+
+[e32e76ae18ee:00000] *** An error occurred in MPI_Comm_create
+[e32e76ae18ee:00000] *** reported by process [3880124417,4]
+[e32e76ae18ee:00000] *** on communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+[e32e76ae18ee:00000] *** MPI_ERR_PROC_FAILED: Process Failure
+[e32e76ae18ee:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[e32e76ae18ee:00000] ***    and MPI will try to terminate your MPI job as well)
+NBC_Progress: an error 75 was found during schedule 0x7fdd21e4ccf0 at row-offset 0 - aborting the schedule
+
+[e32e76ae18ee:00000] *** An error occurred in MPI_Comm_create
+[e32e76ae18ee:00000] *** reported by process [3880124417,1]
+[e32e76ae18ee:00000] *** on communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+[e32e76ae18ee:00000] *** MPI_ERR_PROC_FAILED: Process Failure
+[e32e76ae18ee:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[e32e76ae18ee:00000] ***    and MPI will try to terminate your MPI job as well)
+NBC_Progress: an error 75 was found during schedule 0x7fda97612cf0 at row-offset 294 - aborting the schedule
+
+[e32e76ae18ee:00000] *** An error occurred in MPI_Comm_create
+[e32e76ae18ee:00000] *** reported by process [3880124417,9]
+[e32e76ae18ee:00000] *** on communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+[e32e76ae18ee:00000] *** MPI_ERR_PROC_FAILED: Process Failure
+[e32e76ae18ee:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[e32e76ae18ee:00000] ***    and MPI will try to terminate your MPI job as well)
+NBC_Progress: an error 75 was found during schedule 0x7f3a54d21cf0 at row-offset 98 - aborting the schedule
+
+[e32e76ae18ee:00000] *** An error occurred in MPI_Comm_create
+[e32e76ae18ee:00000] *** reported by process [3880124417,11]
+[e32e76ae18ee:00000] *** on communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+[e32e76ae18ee:00000] *** MPI_ERR_PROC_FAILED: Process Failure
+[e32e76ae18ee:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[e32e76ae18ee:00000] ***    and MPI will try to terminate your MPI job as well)
+NBC_Progress: an error 75 was found during schedule 0x7fb9b5195cf0 at row-offset 98 - aborting the schedule
+
+[e32e76ae18ee:00000] *** An error occurred in MPI_Comm_create
+[e32e76ae18ee:00000] *** reported by process [3880124417,3]
+[e32e76ae18ee:00000] *** on communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+[e32e76ae18ee:00000] *** MPI_ERR_PROC_FAILED: Process Failure
+[e32e76ae18ee:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[e32e76ae18ee:00000] ***    and MPI will try to terminate your MPI job as well)
+NBC_Progress: an error 75 was found during schedule 0x7f377c288cf0 at row-offset 0 - aborting the schedule
+
+[e32e76ae18ee:00000] *** An error occurred in MPI_Comm_create
+[e32e76ae18ee:00000] *** reported by process [3880124417,14]
+[e32e76ae18ee:00000] *** on communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+[e32e76ae18ee:00000] *** MPI_ERR_PROC_FAILED: Process Failure
+[e32e76ae18ee:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[e32e76ae18ee:00000] ***    and MPI will try to terminate your MPI job as well)
+NBC_Progress: an error 75 was found during schedule 0x7f427b8cacf0 at row-offset 98 - aborting the schedule
+
+[e32e76ae18ee:00000] *** An error occurred in MPI_Comm_create
+[e32e76ae18ee:00000] *** reported by process [3880124417,7]
+[e32e76ae18ee:00000] *** on communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+[e32e76ae18ee:00000] *** MPI_ERR_PROC_FAILED: Process Failure
+[e32e76ae18ee:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[e32e76ae18ee:00000] ***    and MPI will try to terminate your MPI job as well)
+NBC_Progress: an error 75 was found during schedule 0x7f1e0f51ccf0 at row-offset 0 - aborting the schedule
+
+[e32e76ae18ee:00000] *** An error occurred in MPI_Comm_create
+[e32e76ae18ee:00000] *** reported by process [3880124417,8]
+[e32e76ae18ee:00000] *** on communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+[e32e76ae18ee:00000] *** MPI_ERR_PROC_FAILED: Process Failure
+[e32e76ae18ee:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[e32e76ae18ee:00000] ***    and MPI will try to terminate your MPI job as well)
+NBC_Progress: an error 75 was found during schedule 0x7f10aaacdcf0 at row-offset 0 - aborting the schedule
+
+[e32e76ae18ee:00000] *** An error occurred in MPI_Comm_create
+[e32e76ae18ee:00000] *** reported by process [3880124417,10]
+[e32e76ae18ee:00000] *** on communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+[e32e76ae18ee:00000] *** MPI_ERR_PROC_FAILED: Process Failure
+[e32e76ae18ee:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[e32e76ae18ee:00000] ***    and MPI will try to terminate your MPI job as well)
+NBC_Progress: an error 75 was found during schedule 0x7fd7941decf0 at row-offset 0 - aborting the schedule
+
+[e32e76ae18ee:00000] *** An error occurred in MPI_Comm_create
+[e32e76ae18ee:00000] *** reported by process [3880124417,12]
+[e32e76ae18ee:00000] *** on communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+[e32e76ae18ee:00000] *** MPI_ERR_PROC_FAILED: Process Failure
+[e32e76ae18ee:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[e32e76ae18ee:00000] ***    and MPI will try to terminate your MPI job as well)
+NBC_Progress: an error 75 was found during schedule 0x7f7ad9f57cf0 at row-offset 98 - aborting the schedule
+
+[e32e76ae18ee:00000] *** An error occurred in MPI_Comm_create
+[e32e76ae18ee:00000] *** reported by process [3880124417,15]
+[e32e76ae18ee:00000] *** on communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+[e32e76ae18ee:00000] *** MPI_ERR_PROC_FAILED: Process Failure
+[e32e76ae18ee:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[e32e76ae18ee:00000] ***    and MPI will try to terminate your MPI job as well)
+NBC_Progress: an error 75 was found during schedule 0x7fe97ba18cf0 at row-offset 0 - aborting the schedule
+
+[e32e76ae18ee:00000] *** An error occurred in MPI_Comm_create
+[e32e76ae18ee:00000] *** reported by process [3880124417,6]
+[e32e76ae18ee:00000] *** on communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+[e32e76ae18ee:00000] *** MPI_ERR_PROC_FAILED: Process Failure
+[e32e76ae18ee:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[e32e76ae18ee:00000] ***    and MPI will try to terminate your MPI job as well)
+NBC_Progress: an error 75 was found during schedule 0x7f8d50706d10 at row-offset 0 - aborting the schedule
+
+[e32e76ae18ee:00000] *** An error occurred in MPI_Comm_create
+[e32e76ae18ee:00000] *** reported by process [3880124417,16]
+[e32e76ae18ee:00000] *** on communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+[e32e76ae18ee:00000] *** MPI_ERR_PROC_FAILED: Process Failure
+[e32e76ae18ee:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[e32e76ae18ee:00000] ***    and MPI will try to terminate your MPI job as well)
+unable to upgrade to tcp, received 409
+Error response from daemon: container e32e76ae18ee7b960e722e6be2295baacdb179f923f8bfd41bf111bff7505b51 is not running
+Error response from daemon: container e32e76ae18ee7b960e722e6be2295baacdb179f923f8bfd41bf111bff7505b51 is not running
+Error response from daemon: container e32e76ae18ee7b960e722e6be2295baacdb179f923f8bfd41bf111bff7505b51 is not running
+Error response from daemon: container e32e76ae18ee7b960e722e6be2295baacdb179f923f8bfd41bf111bff7505b51 is not running
+Error response from daemon: container e32e76ae18ee7b960e722e6be2295baacdb179f923f8bfd41bf111bff7505b51 is not running
+Error response from daemon: container e32e76ae18ee7b960e722e6be2295baacdb179f923f8bfd41bf111bff7505b51 is not running
+Error response from daemon: container e32e76ae18ee7b960e722e6be2295baacdb179f923f8bfd41bf111bff7505b51 is not running
+Error response from daemon: container e32e76ae18ee7b960e722e6be2295baacdb179f923f8bfd41bf111bff7505b51 is not running
+
+real	0m3.215s
+user	0m0.743s
+sys	0m0.439s

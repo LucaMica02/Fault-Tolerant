@@ -552,7 +552,7 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    int buf_size = 50000000;
+    int buf_size = atoi(argv[1]);
     int *buffer;
     int *result;
     buffer = (int *)malloc(buf_size * sizeof(int));
@@ -579,13 +579,9 @@ int main(int argc, char *argv[])
     res = 0;
     for (int i = 0; i < buf_size; i++)
     {
-        res += result[i];
+        res += (result[i] % 17);
     }
     printf("Hello from %d of %d and the result is: %d \n", data->original_rank, data->original_size, res);
-    if (data->original_rank == 0)
-    {
-        printf("Expected: %d\n", (((data->original_size - 1) * data->original_size) / 2) * buf_size);
-    }
     MPI_Finalize();
     free(data->inactive_ranks);
     free(data->active_ranks);
