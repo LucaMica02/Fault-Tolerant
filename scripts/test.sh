@@ -1,9 +1,10 @@
 #!/bin/bash
 
-N=$((RANDOM % 32 + 1)) # 1 - 32
-DELAY=1  #$((RANDOM % 3 + 1)) # 1 - 3
-THRESHOLD=$((RANDOM % (80 - 5 + 1) + 5)) # 5 - 80
-BUF_SIZE=$((RANDOM % (20000000 - 10000000 + 1) + 10000000)) # 10000000 - 20000000
+N=$((RANDOM % (32 - 4 + 1) + 4)) # 4 - 32
+DELAY=$((RANDOM % (6 - 2 + 1)+ 2)) # 2 - 6
+THRESHOLD=$(python3 ../scripts/get_threshold.py $N)
+read MIN MAX <<< $(python3 ../scripts/get_bs.py $N)
+BUF_SIZE=$((RANDOM % (MAX - MIN + 1) + MIN))
 TIMEOUT=30
 
 echo "Generated values:" > ../out/test_log.txt
