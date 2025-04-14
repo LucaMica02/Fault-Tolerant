@@ -178,10 +178,51 @@ Steps:
 - Randomizzare i parametri * 
 - Checker validità * 
 - Salvare dati [log] *
-- Migliorare Range randomici 
-- Equazione per far durare run tra 5 e 10 sec
-- Analisi Statistiche
-- Testarlo sul cluster
+- Migliorare Range randomici *
+- Equazione per far durare run tra 5 e 10 sec *
+- Analisi Statistiche *
+- Testarlo sul cluster *
 
 * mv log.csv ../../../../../../mnt/c/Users/lucam/Drive/Desktop
 * Lanciarlo da src 
+
+## DEBUG ##
+- Vedere quando si verificano segfault e deadlock 
+- Usare dei log e debaggure per evidenziare i problemi
+- Classificare i problemi riscontrati 
+- Risolvere problemi 
+- Testare di nuovo 
+
+## GENERALIZZAZIONE RD ##
+- Vedere implementazioni ufficiali
+- Valida per tipi diversi
+- Valida per operazioni diverse
+- Considera commutatività / associatività
+
+## Problema SendRecv
+Quando un processo p muore dopo la barriera e prima della send recv, il suo partner non lo sa, 
+quando va a fare la sendrecv rimane in attesa infinita.
+Gli altri vanno avanti e quando arrivano alla barriera capiscono che qualcuno è morto il che dovrebbe 
+tornare errore, ma siccome c'è un processo vivo bloccato, rimangono tutti ad aspettarlo.
+Come posso risovlere?
+-> Faccio un check prima della sendrecv che il mio partner è ancora vivo 
+-> Problema ridotto a se la kill avviene direttamente nella SendRecv
+* Può essere risolto usando la tecnica precedente e facendo direttamente le chiamate isend e irecv
+    invece della sendrecv, il problema è che bisogna usare un timeout per le isend / irecv 
+    ovvero io faccio le chiamate e mi blocco in un ciclo while per 10 volte e un totale di 0.1 secondi
+    per assicurarmi che le chiamate riescano a completare, se lo faccio passando solo una flag sono sicuro
+    che riesco a completarlo correttamente, ma se lo faccio direttamente sul buffer rischio che il tempo 
+    di timeout che setto è troppo breve e i processi non riescono a completare le loro operazioni, questo
+    behavioral porterebbe a una situazione in cui esco dal ciclo credendo che il mio partner sia morto e 
+    che verrà notificato quando raggiungo la barriera, ma ciò non è vero, il mio partner è vivo e la barriera
+    non notificherà nessun morto, questo porterebbe processi che hanno dati errati credendo siano stati 
+    aggiustati correttamente.
+    Bisognerebbe quindi scegliere un tempo di timeout adeguato, ma questo può diventare un fattore molto
+    critico in quando non possiamo sapere quando tempo chiederà la chiamata sendrecv dato che dipende
+    da molti fattori 
+* Purtroppo se il buffer è grande, gran parte della computazione viene spesa proprio nelle 
+    sendrecv, quindi non è così raro che questo errore si verific 
+* TODO: 
+    implementare, testare e analizzare i log della versione che non usa sendrecv
+* Un altro errore che accade in rari casi è dovuto a processi che notificano morti diverse,
+    bisognerebbe approfondire come le chiamate ack/get_acked in ULFM sono realizzate 

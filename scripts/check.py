@@ -58,9 +58,10 @@ def mpiOutput(N, result):
         lines = file.readlines()
     for line in lines:
         line = line.split()
-        survivors.add(int(line[2]))
-        if int(line[-1]) != result:
-            RIGHT_RESULT = False
+        if line[0] == "Hello":
+            survivors.add(int(line[2]))
+            if int(line[-1]) != result:
+                RIGHT_RESULT = False
     for i in range(N):
         if i not in survivors:
             killed.append(i)

@@ -74,6 +74,18 @@ int is_alive(int *ranks_gc, int rank, int n)
     return 1;
 }
 
+int contains(int *array, int target, int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        if (target == array[i])
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int send_size, Data *data, MPI_Datatype msg_type)
 {
 
@@ -113,9 +125,8 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
     old_comm = *pworld;
     *pworld = new_world;
 
-    /*
     // log the failed ranks
-    if (data->original_rank == 9)
+    if (data->original_rank == 0)
     {
         printf("DEAD: ");
         for (i = 0; i < nf; i++)
@@ -124,7 +135,6 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
         }
         puts("");
     }
-    */
 
     inactive_nf = 0;
     // check if is failed an inactive rank
@@ -194,6 +204,17 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
                 }
             }
 
+            // find the index of the killed ranks
+            int *killed_idxs = (int *)malloc(sizeof(int) * nf);
+            j = 0;
+            for (i = 0; i < data->active_ranks_count; i++)
+            {
+                if (is_alive(ranks_gc, data->active_ranks[i], nf + inactive_nf) == 0)
+                {
+                    killed_idxs[j++] = i;
+                }
+            }
+
             j = data->inactive_ranks_count - 1;
             for (i = 0; i < data->active_ranks_count; i++)
             {
@@ -218,8 +239,10 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
 
                         // I have to send the data to the corrupted process
                         corr = i ^ (*distance / 2);
-                        if (data->master == 1 && (corr / (*distance / 2) == rank / (*distance / 2)))
+                        if (contains(killed_idxs, corr, nf) == 0 &&
+                            (data->master == 1 && (corr / (*distance / 2) == rank / (*distance / 2))))
                         {
+                            // printf("%d is corr index; there is: %d; and is alive: %d\n", corr, data->active_ranks[corr], is_alive(ranks_gc, data->active_ranks[corr], nf + inactive_nf) == 1);
                             to_send_size++;
                             if (to_send_size == 1)
                             {
@@ -299,6 +322,10 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
             }
         }
     }
+    else
+    {
+        nf = 0;
+    }
 
     MPI_Comm_group(old_comm, &group_c);
     MPI_Group_incl(group_c, data->active_ranks_count, data->active_ranks, &group_survivors);
@@ -309,25 +336,24 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
     // restore the data if necessary
     for (i = 0; i < to_wk_up_size; i++)
     {
-        err = MPI_Send(src, send_size, msg_type, to_wk_up[i], 0, old_comm);
         // printf("%d / %d blocked in sendig to inactive %d err: %d\n", data->original_rank, data->original_size, to_wk_up[i], err);
+        err = MPI_Send(src, send_size, msg_type, to_wk_up[i], 0, old_comm);
     }
     for (i = 0; i < to_send_size; i++)
     {
-        err = MPI_Send(src, send_size, msg_type, to_send[i], 0, *pcomm);
         // printf("%d / %d blocked in send up %d err: %d \n", data->original_rank, data->original_size, to_send[i], err);
+        err = MPI_Send(src, send_size, msg_type, to_send[i], 0, *pcomm);
     }
     if (wk_up == 1)
     {
-        err = MPI_Recv(src, send_size, msg_type, MPI_ANY_SOURCE, 0, old_comm, MPI_STATUS_IGNORE);
         // printf("%d / %d inactive blocked in receiving up err: %d recv: %d\n", data->original_rank, data->original_size, err, src[0]);
+        err = MPI_Recv(src, send_size, msg_type, MPI_ANY_SOURCE, 0, old_comm, MPI_STATUS_IGNORE);
     }
     if (to_recv == 1)
     {
-        err = MPI_Recv(src, send_size, msg_type, MPI_ANY_SOURCE, 0, *pcomm, MPI_STATUS_IGNORE);
         // printf("%d / %d blocked in receiving up err: %d recv: %d\n", data->original_rank, data->original_size, err, src[0]);
+        err = MPI_Recv(src, send_size, msg_type, MPI_ANY_SOURCE, 0, *pcomm, MPI_STATUS_IGNORE);
     }
-
     // restore data struct
     for (i = 0; i < data->active_ranks_count; i++)
     {
@@ -341,6 +367,8 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
         }
         data->active_ranks[i] -= k;
     }
+
+    // printf("From %d NF = %d, INACTIVE_NF = %d, K = %d\n", data->original_rank, nf, inactive_nf, k);
     for (i = 0; i < data->inactive_ranks_count; i++)
     {
         k = 0;
@@ -354,21 +382,21 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
         data->inactive_ranks[i] -= k;
     }
 
-    /*
     // log the data struct
-    if (data->original_rank == 9)
+    /*
+    if (data->original_rank == 0)
     {
-        printf("ACTIVE: ");
-        for (int i = 0; i < data->active_ranks_count; i++)
-        {
-            printf("%d ", data->active_ranks[i]);
-        }
-        printf("\nINACTIVE: ");
-        for (int i = 0; i < data->inactive_ranks_count; i++)
-        {
-            printf("%d ", data->inactive_ranks[i]);
-        }
-        puts("");
+    printf("ACTIVE: ");
+    for (int i = 0; i < data->active_ranks_count; i++)
+    {
+        printf("%d ", data->active_ranks[i]);
+    }
+    printf("\nINACTIVE: ");
+    for (int i = 0; i < data->inactive_ranks_count; i++)
+    {
+        printf("%d ", data->inactive_ranks[i]);
+    }
+    puts("");
     }
     */
 
@@ -385,6 +413,8 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
             break;
         }
     }
+    // printf("%d is %d\n", data->original_rank, data->active);
+    //   printf("%d is HERE\n", rank);
 
     // if ((data->original_rank == 13))
     //   raise(SIGKILL);
@@ -426,9 +456,11 @@ void recursive_doubling_int_sum(int *src, int *dst, int send_size, MPI_Comm worl
     for (distance = 1; distance < data->active_ranks_count; distance *= 2)
     {
         // printf("EEE dist: %d size: %d\n", distance, data->active_ranks_count);
-        // printf("%d / %d & D: %d\n", rank, size, distance);
+        // printf("%d & D: %d\n", data->original_rank, distance);
         // if ((distance == 2 && data->original_rank == 2))
         //  raise(SIGKILL);
+        error = MPI_Barrier(world_comm);
+        // printf("CACCOLA1\n");
         if (error != MPI_SUCCESS)
         {
             if (error != 75)
@@ -439,18 +471,42 @@ void recursive_doubling_int_sum(int *src, int *dst, int send_size, MPI_Comm worl
             errhandler(&world_comm, &comm, &distance, src_copy, send_size, data, msg_type);
             // printf("%d / %d & D: %d\n", rank, size, distance);
         }
-        // printf("%d / %d dist: %d cc: %d \n", data->original_rank, data->original_size, distance, cc);
+        // printf("CACCOLA2\n");
+        //   printf("%d / %d dist: %d cc: %d \n", data->original_rank, data->original_size, distance, cc);
         if (data->active == 1)
         {
             MPI_Comm_rank(comm, &rank);
-            // printf("%d / %d is here! %d %d\n", rank, size, a, b);
+            // printf("%d / %d is here!\n", data->original_rank, data->original_size);
         }
         partner = rank ^ distance;
+        // printf("CACCOLA3\n");
         if (partner < size && data->active != 0)
         {
-            MPI_Sendrecv(src_copy, send_size, msg_type, partner, 0,
-                         dst_copy, send_size, msg_type, partner, 0,
-                         comm, MPI_STATUS_IGNORE);
+            // check if our partner is alive
+            MPI_Request requests[2];
+            int send_flag = 1;
+            int recv_flag = 0;
+            int test_flag = 0;
+            int counter_flag = 0;
+            // Start non-blocking send/recv
+            MPI_Isend(&send_flag, 1, MPI_INT, partner, 0, comm, &requests[0]);
+            MPI_Irecv(&recv_flag, 1, MPI_INT, partner, 0, comm, &requests[1]);
+            // Wait for both operations to complete
+            while (test_flag == 0 && counter_flag < 10)
+            {
+                MPI_Testall(2, requests, &test_flag, MPI_STATUSES_IGNORE);
+                counter_flag++;
+                usleep(10000); // sleep for 0.01 sec
+            }
+
+            // printf("%d is HERE; dist: %d BEFORE send_flag: %d; recv_flag: %d; test_flag: %d\n", data->original_rank, distance, send_flag, recv_flag, test_flag);
+            if (test_flag == 1) // your partner is still alive
+            {
+                MPI_Sendrecv(src_copy, send_size, msg_type, partner, 0,
+                             dst_copy, send_size, msg_type, partner, 0,
+                             comm, MPI_STATUS_IGNORE);
+            }
+            // printf("%d is HERE; dist: %d AFTER\n", data->original_rank, distance);
             for (int i = 0; i < send_size; i++)
             {
                 src_copy[i] += dst_copy[i];
@@ -462,9 +518,11 @@ void recursive_doubling_int_sum(int *src, int *dst, int send_size, MPI_Comm worl
         // printf("%d / %d waiting for result and I'm %d\n", data->original_rank, data->original_size, data->active);
         // if ((distance == 4 && data->original_rank == 1 && cc == 1) || (distance == 4 && data->original_rank == 4 && cc == 1) || (distance == 4 && data->original_rank == 8 && cc == 1) || (distance == 4 && data->original_rank == 12 && cc == 1))
         //  raise(SIGKILL);
-        error = MPI_Barrier(world_comm); // fault detection
+        // error = MPI_Barrier(world_comm); // fault detection
+        // printf("CACCOLA4\n");
     }
-
+    // printf("STAMM QUIETIIIIII BEFORE\n");
+    error = MPI_Barrier(world_comm);
     if (error != MPI_SUCCESS)
     {
         if (error != 75)
@@ -474,6 +532,7 @@ void recursive_doubling_int_sum(int *src, int *dst, int send_size, MPI_Comm worl
         cc = 1;
         errhandler(&world_comm, &comm, &distance, src_copy, send_size, data, msg_type);
     }
+    // printf("STAMM QUIETIIIIII\n");
 
     MPI_Comm_set_errhandler(world_comm,
                             MPI_ERRORS_ARE_FATAL);
@@ -539,7 +598,7 @@ void recursive_doubling(int *src, int *dst, int send_size, MPI_Comm world_comm, 
         }
     }
     // printf("From %d / %d I'm: %d and I have: %d\n", data->original_rank, data->original_size, data->active, src[0]);
-    //   performe the algorithm
+    //    performe the algorithm
     recursive_doubling_int_sum(src, dst, send_size, world_comm, comm, data, msg_type);
 }
 

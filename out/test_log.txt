@@ -1,6 +1,137 @@
 Generated values:
-N = 18
-DELAY = 4
-THRESHOLD = 23
-BUF_SIZE = 46534434
+N = 15
+DELAY = 6
+THRESHOLD = 25
+BUF_SIZE = 42109370
 TIMEOUT = 30
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 2 in communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+  Proc: [[32216,1],2]
+  Errorcode: 16
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 6 in communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+  Proc: [[32216,1],7]
+  Errorcode: 16
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 4 in communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+  Proc: [[32216,1],4]
+  Errorcode: 16
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 1 in communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+  Proc: [[32216,1],1]
+  Errorcode: 16
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 5 in communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+  Proc: [[32216,1],5]
+  Errorcode: 16
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 9 in communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+  Proc: [[32216,1],10]
+  Errorcode: 16
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 3 in communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+  Proc: [[32216,1],3]
+  Errorcode: 16
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 7 in communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+  Proc: [[32216,1],8]
+  Errorcode: 16
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 12 in communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+  Proc: [[32216,1],13]
+  Errorcode: 16
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 10 in communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+  Proc: [[32216,1],11]
+  Errorcode: 16
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 0 in communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+  Proc: [[32216,1],0]
+  Errorcode: 16
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 8 in communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+  Proc: [[32216,1],9]
+  Errorcode: 16
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 11 in communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+  Proc: [[32216,1],12]
+  Errorcode: 16
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 13 in communicator MPI COMMUNICATOR 3 SHRUNK FROM 0
+  Proc: [[32216,1],14]
+  Errorcode: 16
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+Error response from daemon: container 599e85b40c567accf07bbbb6e047dec94e5424dfe661a2d9c05949d218eb9e25 is not running
+
+real	0m18.730s
+user	0m0.161s
+sys	0m0.149s

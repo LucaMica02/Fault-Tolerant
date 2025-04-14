@@ -34,13 +34,23 @@ Intial Period:
     - Script per randomizzare parametri
     - Checker validità + Salvataggio dati in log file
 
+8 Aprile - 15 Aprile
+    - Analisi dati dal log 
+    - Testing sul cluster
+    - Fixato nf quando non ho failure negli attivi
+    - Fixato master bloccati su send a morti quando morti e corrotti allo stesso tempo
+    - Aggiunto check partner prima della sendrecv
+
+15 Aprile - 22 Aprile
+
 NEXT:
-    - Generalizzare la collettiva 
+    - Implementare, testare e analizzare versione che non usa sendrecv *
+    - Pulire codice e documentazione
+    - Generalizzare la collettiva *
         - Valida con p non potenza di 2 * 
         - Valida per tipi diversi
         - Valida per operazioni diverse
         - Considera commutatività / associatività
-    - Testare 
     - Ottimizzazione + Memory Leak
 
 # In alcuni rari casi non vengono notificati tutti i failure
