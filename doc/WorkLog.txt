@@ -42,9 +42,12 @@ Intial Period:
     - Aggiunto check partner prima della sendrecv
 
 15 Aprile - 22 Aprile
+    - Aggiunto versione che usa Isend e Irecv al posto di sendrecv
+    - Generalizzato per int e double
 
 NEXT:
-    - Implementare, testare e analizzare versione che non usa sendrecv *
+    - Preparare log per incontro giovedi
+    - Implementare v2 dividendo il buffer in chuncks
     - Pulire codice e documentazione
     - Generalizzare la collettiva *
         - Valida con p non potenza di 2 * 

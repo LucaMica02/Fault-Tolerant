@@ -185,6 +185,7 @@ Steps:
 
 * mv log.csv ../../../../../../mnt/c/Users/lucam/Drive/Desktop
 * Lanciarlo da src 
+* rsync -vr micarelli_2061752@192.168.0.102:~/Fault-Tolerant/log2.csv .
 
 ## DEBUG ##
 - Vedere quando si verificano segfault e deadlock 
@@ -220,9 +221,12 @@ Come posso risovlere?
     Bisognerebbe quindi scegliere un tempo di timeout adeguato, ma questo può diventare un fattore molto
     critico in quando non possiamo sapere quando tempo chiederà la chiamata sendrecv dato che dipende
     da molti fattori 
+* Se il buffer è grande questo è un problema, ma si può risolvere divendendo il messaggio
+    in chunck di dimensione fissa e fare tutto il lavoro di isend, irecv e riduzione step by step 
+    oppure calcolare l'offset e fare la riduzione solo alla fine, in ogni caso se vengono fatte N 
+    chiamate ne bast 1 in cui flag è settata a 0 e capiamo che il nostro partner e morto durante la
+    comunicazione
 * Purtroppo se il buffer è grande, gran parte della computazione viene spesa proprio nelle 
     sendrecv, quindi non è così raro che questo errore si verific 
-* TODO: 
-    implementare, testare e analizzare i log della versione che non usa sendrecv
 * Un altro errore che accade in rari casi è dovuto a processi che notificano morti diverse,
     bisognerebbe approfondire come le chiamate ack/get_acked in ULFM sono realizzate 

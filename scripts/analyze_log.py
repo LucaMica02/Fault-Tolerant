@@ -17,7 +17,7 @@ noKill = 0
 wrongResult = 0
 ok = 0
 
-with open('../log1.csv', mode='r') as file:
+with open('../log2.csv', mode='r') as file:
     reader = csv.reader(file)
     for i, row in enumerate(reader):
         if rows != 0:
@@ -81,7 +81,7 @@ sizes = [deadlock_perc, abort_perc, wrongResult_perc, ok_perc]
 wedges, texts, autotexts = plt.pie(sizes, labels=labels, autopct='%1.1f%%', center=(-1, 0))
 
 # Create custom labels for the legend
-custom_labels = [f'{label} - {round(size, 1)}%' for label, size in zip(labels, sizes)]
+custom_labels = [f'{label} - {round(size, 2)}%' for label, size in zip(labels, sizes)]
 plt.legend(wedges, custom_labels, loc="right", bbox_to_anchor=(1.5, 0.8))
 
 # Plot the text info about the rows

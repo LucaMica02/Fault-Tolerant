@@ -961,4 +961,7 @@ N;DELAY;THRESHOLD;BUF SIZE;KILLED DOCKER;REAL MPI KILLED;TIME;DEADLOCK;SEGFAULT;
 9;3;33;58934260;2;9;4.465;False;False;True;True
 23;2;20;36841283;6;23;5.589;False;False;True;True
 16;4;25;52030641;4;3;30.261;True;True;True;True
-53;4;13;16385425;0;0;4.196;False;False;False;True
+53;4;13;16385425;0;0;4.196;False;False;False;True6;2;40;73690822;1;6;12.956;False;False;True;True
+12;4;28;1000;0;0;4.298;False;False;False;True
+16;3;25;1000;0;0;3.178;False;False;False;True
+12;2;28;1;0;0;2.205;False;False;False;True

@@ -4,7 +4,6 @@
 #include <signal.h>
 #include <unistd.h>
 #include <math.h>
-#include "util.c"
 #include <mpi.h>
 #include <mpi-ext.h>
 
@@ -433,21 +432,21 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
                             MPI_ERRORS_RETURN);
 }
 
-void recursive_doubling_int_sum(void *src, void *dst, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype msg_type)
+void recursive_doubling_int_sum(int *src, int *dst, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype msg_type)
 {
-    int rank, size, distance, error, partner, type_size;
-    void *src_copy, *dst_copy;
+    int rank, size, distance, error, partner, cc;
+    int *src_copy, *dst_copy;
 
-    MPI_Type_size(msg_type, &type_size);
-    src_copy = (void *)malloc(type_size * send_size);
-    dst_copy = (void *)malloc(type_size * send_size);
+    src_copy = (int *)malloc(sizeof(int) * send_size);
+    dst_copy = (int *)malloc(sizeof(int) * send_size);
 
-    memcpy(src_copy, src, type_size * send_size);
-    memcpy(dst_copy, dst, type_size * send_size);
+    memcpy(src_copy, src, sizeof(int) * send_size);
+    memcpy(dst_copy, dst, sizeof(int) * send_size);
 
     MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &size);
     error = 0;
+    cc = 0;
 
     MPI_Comm_set_errhandler(world_comm,
                             MPI_ERRORS_RETURN);
@@ -468,6 +467,7 @@ void recursive_doubling_int_sum(void *src, void *dst, int send_size, MPI_Comm wo
             {
                 MPI_Abort(world_comm, error);
             }
+            cc = 1;
             errhandler(&world_comm, &comm, &distance, src_copy, send_size, data, msg_type);
             // printf("%d / %d & D: %d\n", rank, size, distance);
         }
@@ -484,30 +484,24 @@ void recursive_doubling_int_sum(void *src, void *dst, int send_size, MPI_Comm wo
         {
             // check if our partner is alive
             MPI_Request requests[2];
-            int send_flag = 1;
-            int recv_flag = 0;
             int test_flag = 0;
             int counter_flag = 0;
             // Start non-blocking send/recv
-            MPI_Isend(&send_flag, 1, MPI_INT, partner, 0, comm, &requests[0]);
-            MPI_Irecv(&recv_flag, 1, MPI_INT, partner, 0, comm, &requests[1]);
+            MPI_Isend(src_copy, send_size, msg_type, partner, 0, comm, &requests[0]);
+            MPI_Irecv(dst_copy, send_size, msg_type, partner, 0, comm, &requests[1]);
             // Wait for both operations to complete
-            while (test_flag == 0 && counter_flag < 10)
+            while (test_flag == 0 && counter_flag < 20)
             {
                 MPI_Testall(2, requests, &test_flag, MPI_STATUSES_IGNORE);
                 counter_flag++;
-                usleep(10000); // sleep for 0.01 sec
-            }
-
-            // printf("%d is HERE; dist: %d BEFORE send_flag: %d; recv_flag: %d; test_flag: %d\n", data->original_rank, distance, send_flag, recv_flag, test_flag);
-            if (test_flag == 1) // your partner is still alive
-            {
-                MPI_Sendrecv(src_copy, send_size, msg_type, partner, 0,
-                             dst_copy, send_size, msg_type, partner, 0,
-                             comm, MPI_STATUS_IGNORE);
+                usleep(100000); // sleep for 0.1 sec
             }
             // printf("%d is HERE; dist: %d AFTER\n", data->original_rank, distance);
-            reduction(src_copy, dst_copy, send_size, msg_type);
+            for (int i = 0; i < send_size; i++)
+            {
+                src_copy[i] += dst_copy[i];
+            }
+            printf("%d got flag = %d\n", rank, test_flag);
             // printf("%d / %d res: %d step: %d\n", data->original_rank, data->original_size, src_copy[0], distance);
         }
         // printf("at step %d code %d\n", distance, error);
@@ -526,6 +520,7 @@ void recursive_doubling_int_sum(void *src, void *dst, int send_size, MPI_Comm wo
         {
             MPI_Abort(world_comm, error);
         }
+        cc = 1;
         errhandler(&world_comm, &comm, &distance, src_copy, send_size, data, msg_type);
     }
     // printf("STAMM QUIETIIIIII\n");
@@ -550,12 +545,15 @@ void recursive_doubling_int_sum(void *src, void *dst, int send_size, MPI_Comm wo
         }
     }
 
-    memcpy(dst, src_copy, send_size * type_size);
+    for (int i = 0; i < send_size; i++)
+    {
+        dst[i] = src_copy[i];
+    }
     free(src_copy);
     free(dst_copy);
 }
 
-void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype msg_type)
+void recursive_doubling(int *src, int *dst, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype msg_type)
 {
     // calculate p'
     int p = (int)pow(2, floor(log2(data->original_size)));
@@ -585,7 +583,10 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
     {
         MPI_Recv(dst, send_size, msg_type, data->inactive_ranks[data->original_rank], 0, world_comm, MPI_STATUS_IGNORE);
         // printf("From %d / %d and I received: %d\n", data->original_rank, data->original_size, dst[0]);
-        reduction(src, dst, send_size, msg_type);
+        for (int i = 0; i < send_size; i++)
+        {
+            src[i] += dst[i];
+        }
     }
     // printf("From %d / %d I'm: %d and I have: %d\n", data->original_rank, data->original_size, data->active, src[0]);
     //    performe the algorithm
@@ -595,21 +596,20 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
 int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);
-    int size, rank;
-    double res;
+    int size, rank, res;
     Data *data = (Data *)malloc(sizeof(Data));
 
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     int buf_size = atoi(argv[1]);
-    double *buffer;
-    double *result;
-    buffer = (double *)malloc(buf_size * sizeof(double));
-    result = (double *)malloc(buf_size * sizeof(double));
+    int *buffer;
+    int *result;
+    buffer = (int *)malloc(buf_size * sizeof(int));
+    result = (int *)malloc(buf_size * sizeof(int));
     for (int i = 0; i < buf_size; i++)
     {
-        buffer[i] = (double)rank;
+        buffer[i] = rank;
     }
 
     data->original_rank = rank;
@@ -625,13 +625,13 @@ int main(int argc, char *argv[])
     }
 
     // MPI_Allreduce(&rank, &res, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-    recursive_doubling(buffer, result, buf_size, MPI_COMM_WORLD, MPI_COMM_WORLD, data, MPI_DOUBLE);
-    res = 0.0L;
+    recursive_doubling(buffer, result, buf_size, MPI_COMM_WORLD, MPI_COMM_WORLD, data, MPI_INT);
+    res = 0;
     for (int i = 0; i < buf_size; i++)
     {
-        res += (double)((int)result[i] % 17);
+        res += (result[i] % 17);
     }
-    printf("Hello from %d of %d and the result is: %lf \n", data->original_rank, data->original_size, res);
+    printf("Hello from %d of %d and the result is: %d \n", data->original_rank, data->original_size, res);
     MPI_Finalize();
     free(data->inactive_ranks);
     free(data->active_ranks);

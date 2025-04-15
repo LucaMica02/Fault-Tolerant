@@ -18,9 +18,10 @@ PIDS=($(docker exec -it $CONTAINER_ID ps aux | awk '/main/ {print $1}'))
 for PID in "${PIDS[@]}";  do 
     random_value=$((RANDOM % (max - min + 1) + min))
     #echo $PID
-    #if [ $random_value -lt $THRESHOLD ]; then
-    if [ "$PID" -eq 14 ] || [ "$PID" -eq 17 ] || [ "$PID" -eq 23 ]; then
+    if [ $random_value -lt $THRESHOLD ]; then
+    #if [ "$PID" -eq 14 ] || [ "$PID" -eq 17 ] || [ "$PID" -eq 23 ]; then
         echo killing.. $PID
         docker exec -it "$CONTAINER_ID" kill -9 $PID
+        sleep 0.5
     fi
 done
