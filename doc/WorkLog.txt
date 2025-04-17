@@ -1,12 +1,3 @@
-ACTIVE: 5 1 3 4 
-INACTIVE: 0 2 
-ACTIVE: 6 1 3 4 
-INACTIVE: 5 0 2
-
-kill
-- 2
-- 1, 4, 8, 12
-
 Intial Period:
     - Approfondito allreduce 
     - Approfondito e ragionato su Erasure Coding 
@@ -44,16 +35,56 @@ Intial Period:
 15 Aprile - 22 Aprile
     - Aggiunto versione che usa Isend e Irecv al posto di sendrecv
     - Generalizzato per int e double
+    - Generalizzato con MPI_Reduce_local
+    - Review e refactoring codice
+
 
 NEXT:
-    - Preparare log per incontro giovedi
+    - Preparare log per incontro giovedi *
     - Implementare v2 dividendo il buffer in chuncks
     - Pulire codice e documentazione
     - Generalizzare la collettiva *
         - Valida con p non potenza di 2 * 
-        - Valida per tipi diversi
-        - Valida per operazioni diverse
+        - Valida per tipi diversi *
+        - Valida per operazioni diverse *
         - Considera commutatività / associatività
     - Ottimizzazione + Memory Leak
 
-# In alcuni rari casi non vengono notificati tutti i failure
+* In alcuni rari casi non vengono notificati tutti i failure
+
+# Breve Recap del lavoro fatto finora
+    - Resistenza a 1 o più fault 
+    - Generalizzazione per p non potenza di 2
+    - Testing
+    - Generalizzazione su tipi di dato / operazioni 
+# Ultime cose su cui ho lavorato
+    - Script 
+    - Testing 
+    - Debugging
+    - Version con check partner
+    - Versione senza sendrecv
+        * Attenzione ai tempi
+        * Divisione in Chunks
+        * Impatto quando non ho fault
+    - Generalizzazione per int e double
+# Analisi risultati e punti raggiunti
+    - Logs
+    - Versione di RD abbastanza stabile
+# Condivisione lavoro
+    - Pulizia codice 
+    - Review Report
+# Prossimi step
+    - Finire generalizzazione 
+    - Isend/Irecv divisa in chunks
+    - Ottimizzazione
+    - Altro algoritmo
+
+* Isend/Irecv divisa in chunks 
+* Ottimizzazione Algo
+* Review Report 
+* Fix deadlock e wrong result 
+* Comparazione tempi normale e fault tolerant [senza fault]
+
+* OCHO alla memcpy a riga 306
+* group free su survivors
+* copia è necessaria?

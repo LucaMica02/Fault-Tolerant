@@ -1,12 +1,12 @@
 #include "header.h"
+
 /*
- * Recursive Doubling Allreduce implementation with Fault Tolerance that does a check
- * if the partner is still alive before to actually do the sendrecv
+ * Recursive Doubling Allreduce implementation with Fault Tolerance that
+ * use the Isend/Irecv instead of the sendrecv
  */
-void recursive_doubling_v2(void *src, void *dst, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype datatype, MPI_Op op)
+void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype datatype, MPI_Op op)
 {
-    int rank, size, distance, error, partner, type_size;
-    int send_flag, recv_flag, test_flag, counter_flag;
+    int rank, size, distance, error, partner, type_size, counter_flag, test_flag;
     void *src_copy, *dst_copy;
 
     MPI_Type_size(datatype, &type_size);
@@ -46,26 +46,17 @@ void recursive_doubling_v2(void *src, void *dst, int send_size, MPI_Comm world_c
         {
             /* Check if our partner is alive */
             MPI_Request requests[2];
-            send_flag = 1;
-            recv_flag = 0;
             test_flag = 0;
             counter_flag = 0;
             // Start non-blocking send/recv
-            MPI_Isend(&send_flag, 1, MPI_INT, partner, 0, comm, &requests[0]);
-            MPI_Irecv(&recv_flag, 1, MPI_INT, partner, 0, comm, &requests[1]);
+            MPI_Isend(src_copy, send_size, datatype, partner, 0, comm, &requests[0]);
+            MPI_Irecv(dst_copy, send_size, datatype, partner, 0, comm, &requests[1]);
             // Wait for both operations to complete
-            while (test_flag == 0 && counter_flag < 10)
+            while (test_flag == 0 && counter_flag < 20)
             {
                 MPI_Testall(2, requests, &test_flag, MPI_STATUSES_IGNORE);
                 counter_flag++;
-                usleep(10000); // sleep for 0.01 sec
-            }
-
-            if (test_flag == 1) // your partner is still alive
-            {
-                MPI_Sendrecv(src_copy, send_size, datatype, partner, 0,
-                             dst_copy, send_size, datatype, partner, 0,
-                             comm, MPI_STATUS_IGNORE);
+                usleep(100000); // sleep for 0.1 sec
             }
             MPI_Reduce_local(dst_copy, src_copy, send_size, datatype, op);
         }
