@@ -37,6 +37,8 @@ Intial Period:
     - Generalizzato per int e double
     - Generalizzato con MPI_Reduce_local
     - Review e refactoring codice
+    - Isend/Irecv divisa in chunks 
+    - Ottimizzazione RD
 
 
 NEXT:
@@ -79,9 +81,8 @@ NEXT:
     - Ottimizzazione
     - Altro algoritmo
 
-* Isend/Irecv divisa in chunks 
-* Ottimizzazione Algo
-* Review Report 
+* Ottimizzazione errhandler
+* Review Report + README
 * Fix deadlock e wrong result 
 * Comparazione tempi normale e fault tolerant [senza fault]
 

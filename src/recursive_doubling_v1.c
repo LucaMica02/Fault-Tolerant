@@ -6,19 +6,13 @@
 void recursive_doubling_v1(void *src, void *dst, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype datatype, MPI_Op op)
 {
     int rank, size, distance, error, partner, type_size;
-    void *src_copy, *dst_copy;
 
     MPI_Type_size(datatype, &type_size);
-    src_copy = (void *)malloc(type_size * send_size);
-    dst_copy = (void *)malloc(type_size * send_size);
-
     MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &size);
     error = 0;
 
     reduce_pow2(src, dst, send_size, world_comm, data, datatype, op); // Reduce to power of two
-    memcpy(src_copy, src, type_size * send_size);
-    memcpy(dst_copy, dst, type_size * send_size);
 
     MPI_Comm_set_errhandler(world_comm, // Tolerate failure
                             MPI_ERRORS_RETURN);
@@ -32,7 +26,7 @@ void recursive_doubling_v1(void *src, void *dst, int send_size, MPI_Comm world_c
         {
             if (error != 75) // MPIX_ERR_PROC_FAILED
                 MPI_Abort(world_comm, error);
-            errhandler(&world_comm, &comm, &distance, src_copy, send_size, data, datatype);
+            errhandler(&world_comm, &comm, &distance, src, send_size, data, datatype);
         }
 
         /* Compute the right partner */
@@ -43,10 +37,22 @@ void recursive_doubling_v1(void *src, void *dst, int send_size, MPI_Comm world_c
         /* Exchange the data between ranks */
         if (partner < size && data->active != 0)
         {
-            MPI_Sendrecv(src_copy, send_size, datatype, partner, 0,
-                         dst_copy, send_size, datatype, partner, 0,
+            MPI_Sendrecv(src, send_size, datatype, partner, 0,
+                         dst, send_size, datatype, partner, 0,
                          comm, MPI_STATUS_IGNORE);
-            MPI_Reduce_local(dst_copy, src_copy, send_size, datatype, op);
+
+            /*
+             * We accumulate the result in src to send it at the parner in the next iteration
+             * to avoid doing the memcpy at the end, if is the last reduction take the dst like a out buffer
+             */
+            if (distance * 2 >= data->active_ranks_count)
+            {
+                MPI_Reduce_local(src, dst, send_size, datatype, op);
+            }
+            else
+            {
+                MPI_Reduce_local(dst, src, send_size, datatype, op);
+            }
         }
     }
 
@@ -56,7 +62,7 @@ void recursive_doubling_v1(void *src, void *dst, int send_size, MPI_Comm world_c
     {
         if (error != 75) // MPIX_ERR_PROC_FAILED
             MPI_Abort(world_comm, error);
-        errhandler(&world_comm, &comm, &distance, src_copy, send_size, data, datatype);
+        errhandler(&world_comm, &comm, &distance, src, send_size, data, datatype);
     }
 
     MPI_Comm_set_errhandler(world_comm, // no more tolerating failure
@@ -67,7 +73,7 @@ void recursive_doubling_v1(void *src, void *dst, int send_size, MPI_Comm world_c
     if (data->active == 0)
     {
         // waiting for result
-        MPI_Recv(src_copy, send_size, datatype, MPI_ANY_SOURCE, 0, world_comm, MPI_STATUS_IGNORE);
+        MPI_Recv(src, send_size, datatype, MPI_ANY_SOURCE, 0, world_comm, MPI_STATUS_IGNORE);
     }
     else
     {
@@ -75,11 +81,7 @@ void recursive_doubling_v1(void *src, void *dst, int send_size, MPI_Comm world_c
         if (rank < data->inactive_ranks_count)
         {
             // send the result
-            MPI_Send(src_copy, send_size, datatype, data->inactive_ranks[rank], 0, world_comm);
+            MPI_Send(src, send_size, datatype, data->inactive_ranks[rank], 0, world_comm);
         }
     }
-
-    memcpy(dst, src_copy, send_size * type_size);
-    free(src_copy);
-    free(dst_copy);
 }

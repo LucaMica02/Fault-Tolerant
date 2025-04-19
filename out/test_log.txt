@@ -1,23 +1,10 @@
 Generated values:
-N = 27
-DELAY = 3
-THRESHOLD = 19
-BUF_SIZE = 250000
+N = 4
+DELAY = 4
+THRESHOLD = 50
+BUF_SIZE = 500100
 TIMEOUT = 30
-[7f85bc000be8:00000] *** An error occurred in MPI_Testall
-[7f85bc000be8:00000] *** reported by process [3979935745,7]
-[7f85bc000be8:00000] *** on communicator MPI COMMUNICATOR 4 CREATE FROM 3
-[7f85bc000be8:00000] *** MPI_ERR_PROC_FAILED: Process Failure
-[7f85bc000be8:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
-[7f85bc000be8:00000] ***    and MPI will try to terminate your MPI job as well)
-[7f85bc000be8:00000] *** An error occurred in MPI_Testall
-[7f85bc000be8:00000] *** reported by process [3979935745,5]
-[7f85bc000be8:00000] *** on communicator MPI COMMUNICATOR 6 CREATE FROM 5
-[7f85bc000be8:00000] *** MPI_ERR_PROC_FAILED: Process Failure
-[7f85bc000be8:00000] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
-[7f85bc000be8:00000] ***    and MPI will try to terminate your MPI job as well)
-Error response from daemon: container 7f85bc000be8a30fc232f28450fdb31d6df83aca1eac7746e52333a1ac03a887 is not running
 
-real	0m7.604s
-user	0m0.440s
-sys	0m0.219s
+real	0m4.164s
+user	0m0.138s
+sys	0m0.042s

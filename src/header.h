@@ -10,6 +10,8 @@
 #include <mpi.h>
 #include <mpi-ext.h>
 
+#define CHUNK_SIZE 1000
+
 /* Data struct that contain information useful for the ranks */
 typedef struct
 {

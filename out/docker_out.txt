@@ -1,8 +1,0 @@
-killing.. 12
-killing.. 13
-killing.. 17
-kill: can't kill pid 17: No such process
-killing.. 25
-killing.. 26
-killing.. 33
-killing.. 35

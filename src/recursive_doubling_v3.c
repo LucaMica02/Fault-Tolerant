@@ -6,20 +6,14 @@
  */
 void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype datatype, MPI_Op op)
 {
-    int rank, size, distance, error, partner, type_size, counter_flag, test_flag;
-    void *src_copy, *dst_copy;
+    int rank, size, distance, error, partner, type_size, counter_flag, test_flag, chunk;
 
     MPI_Type_size(datatype, &type_size);
-    src_copy = (void *)malloc(type_size * send_size);
-    dst_copy = (void *)malloc(type_size * send_size);
-
     MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &size);
     error = 0;
 
     reduce_pow2(src, dst, send_size, world_comm, data, datatype, op); // Reduce to power of two
-    memcpy(src_copy, src, type_size * send_size);
-    memcpy(dst_copy, dst, type_size * send_size);
 
     MPI_Comm_set_errhandler(world_comm, // Tolerate failure
                             MPI_ERRORS_RETURN);
@@ -33,7 +27,7 @@ void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm world_c
         {
             if (error != 75) // MPIX_ERR_PROC_FAILED
                 MPI_Abort(world_comm, error);
-            errhandler(&world_comm, &comm, &distance, src_copy, send_size, data, datatype);
+            errhandler(&world_comm, &comm, &distance, src, send_size, data, datatype);
         }
 
         /* Compute the right partner */
@@ -44,21 +38,51 @@ void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm world_c
         /* Exchange the data between ranks */
         if (partner < size && data->active != 0)
         {
-            /* Check if our partner is alive */
-            MPI_Request requests[2];
-            test_flag = 0;
-            counter_flag = 0;
-            // Start non-blocking send/recv
-            MPI_Isend(src_copy, send_size, datatype, partner, 0, comm, &requests[0]);
-            MPI_Irecv(dst_copy, send_size, datatype, partner, 0, comm, &requests[1]);
-            // Wait for both operations to complete
-            while (test_flag == 0 && counter_flag < 20)
+            for (int i = 0; i < send_size; i += CHUNK_SIZE)
             {
-                MPI_Testall(2, requests, &test_flag, MPI_STATUSES_IGNORE);
-                counter_flag++;
-                usleep(100000); // sleep for 0.1 sec
+                MPI_Request requests[2];
+                test_flag = 0;
+                counter_flag = 0;
+                chunk = (i + CHUNK_SIZE > send_size) ? send_size - i : CHUNK_SIZE;
+
+                /*
+                 * Since we can't do the pointer arithmetic with void pointer, we cast the void pointer
+                 * to char pointer that have size 1 byte and then we add the offset * type_size
+                 */
+                void *src_p = (char *)src + i * type_size;
+                void *dst_p = (char *)dst + i * type_size;
+                MPI_Isend(src_p, chunk, datatype, partner, 0, comm, &requests[0]);
+                MPI_Irecv(dst_p, chunk, datatype, partner, 0, comm, &requests[1]);
+
+                /*
+                 * How my network should be fast to deliver the CHUNK_SIZE?
+                 * we sleep 0.001 for 10 times for a total of 0.01
+                 * the CHUNK_SIZE is set to 1000, in the worst case the type is 8 byte
+                 * so the message will have 8000 byte = 64000bit size
+                 * since 64000 / 6400000 = 0.01 this mean that with a network of 6,4 Mbs
+                 * you're able to send the whole CHUNK
+                 * considering delays and your network speed, adjust the sleep parameter
+                 */
+                while (test_flag == 0 && counter_flag < 10)
+                {
+                    MPI_Testall(2, requests, &test_flag, MPI_STATUSES_IGNORE);
+                    counter_flag++;
+                    usleep(1000); // sleep for 0.001 sec
+                }
+
+                /*
+                 * We accumulate the result in src to send it at the parner in the next iteration
+                 * to avoid doing the memcpy at the end, if is the last reduction take the dst like a out buffer
+                 */
+                if (distance * 2 >= data->active_ranks_count)
+                {
+                    MPI_Reduce_local(src_p, dst_p, chunk, datatype, op);
+                }
+                else
+                {
+                    MPI_Reduce_local(dst_p, src_p, chunk, datatype, op);
+                }
             }
-            MPI_Reduce_local(dst_copy, src_copy, send_size, datatype, op);
         }
     }
 
@@ -68,7 +92,7 @@ void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm world_c
     {
         if (error != 75) // MPIX_ERR_PROC_FAILED
             MPI_Abort(world_comm, error);
-        errhandler(&world_comm, &comm, &distance, src_copy, send_size, data, datatype);
+        errhandler(&world_comm, &comm, &distance, src, send_size, data, datatype);
     }
 
     MPI_Comm_set_errhandler(world_comm, // no more tolerating failure
@@ -79,7 +103,7 @@ void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm world_c
     if (data->active == 0)
     {
         // waiting for result
-        MPI_Recv(src_copy, send_size, datatype, MPI_ANY_SOURCE, 0, world_comm, MPI_STATUS_IGNORE);
+        MPI_Recv(src, send_size, datatype, MPI_ANY_SOURCE, 0, world_comm, MPI_STATUS_IGNORE);
     }
     else
     {
@@ -87,11 +111,7 @@ void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm world_c
         if (rank < data->inactive_ranks_count)
         {
             // send the result
-            MPI_Send(src_copy, send_size, datatype, data->inactive_ranks[rank], 0, world_comm);
+            MPI_Send(src, send_size, datatype, data->inactive_ranks[rank], 0, world_comm);
         }
     }
-
-    memcpy(dst, src_copy, send_size * type_size);
-    free(src_copy);
-    free(dst_copy);
 }
