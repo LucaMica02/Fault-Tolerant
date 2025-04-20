@@ -290,11 +290,11 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
         }
     }
 
-    // MPI_Group_free(&group_survivors); // error if an inactive proc fail
     if (to_send_size > 0)
         free(to_send);
     if (to_wk_up_size > 0)
         free(to_wk_up);
+    MPI_Group_free(&group_survivors);
     MPI_Group_free(&group_c);
     MPI_Group_free(&group_f);
     free(ranks_gf);

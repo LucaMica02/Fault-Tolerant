@@ -39,7 +39,7 @@ Intial Period:
     - Review e refactoring codice
     - Isend/Irecv divisa in chunks 
     - Ottimizzazione RD
-
+    - Refactoring RD
 
 NEXT:
     - Preparare log per incontro giovedi *
@@ -81,11 +81,10 @@ NEXT:
     - Ottimizzazione
     - Altro algoritmo
 
-* Ottimizzazione errhandler
 * Review Report + README
 * Fix deadlock e wrong result 
 * Comparazione tempi normale e fault tolerant [senza fault]
+* Refactoring errhandler
 
 * OCHO alla memcpy a riga 306
 * group free su survivors
-* copia è necessaria?

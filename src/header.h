@@ -25,14 +25,17 @@ typedef struct
     int master;
 } Data;
 
-/* Standard implementation of recursive doubling allreduce with fault tolerance */
-void recursive_doubling_v1(void *src, void *dst, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype datatype, MPI_Op op);
+/* General implementation of recursive doubling allreduce with fault tolerance */
+void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype datatype, MPI_Op op);
 
-/* Implementation of recursive doubling allreduce with fault tolerance and partner check */
-void recursive_doubling_v2(void *src, void *dst, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype datatype, MPI_Op op);
+/* Standard implementation */
+void recursive_doubling_v1(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner);
 
-/* Implementation of recursive doubling allreduce with fault tolerance that use Isend/Irecv instead of sendrecv */
-void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype datatype, MPI_Op op);
+/* Implementation with partner check */
+void recursive_doubling_v2(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner);
+
+/* Implementation that use Isend/Irecv instead of sendrecv */
+void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner, int type_size);
 
 /* Function that manage the events where one or more rank fail */
 void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int send_size, Data *data, MPI_Datatype datatype);

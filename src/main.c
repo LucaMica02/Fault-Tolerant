@@ -35,10 +35,7 @@ int main(int argc, char *argv[])
         data->active_ranks[i] = i;
     }
 
-    /* Choose the recursive doubling version to test */
-    // recursive_doubling_v1(buffer, result, buf_size, MPI_COMM_WORLD, MPI_COMM_WORLD, data, MPI_INT, MPI_SUM);
-    // recursive_doubling_v2(buffer, result, buf_size, MPI_COMM_WORLD, MPI_COMM_WORLD, data, MPI_INT, MPI_SUM);
-    recursive_doubling_v3(buffer, result, buf_size, MPI_COMM_WORLD, MPI_COMM_WORLD, data, MPI_INT, MPI_SUM);
+    recursive_doubling(buffer, result, buf_size, MPI_COMM_WORLD, MPI_COMM_WORLD, data, MPI_INT, MPI_SUM);
 
     res = 0;
     for (int i = 0; i < buf_size; i++)
