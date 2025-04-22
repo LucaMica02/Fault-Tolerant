@@ -110,6 +110,6 @@ def plotLog(filename, title):
     plt.show()
 
 plotLog('../logs/log.csv', "Versione Iniziale")
-plotLog('../logs/log3.csv', "Versione dopo Debug")
-plotLog('../logs/log1.csv', "Versione con check del partner")
-plotLog('../logs/log2.csv', "Versione senza sendrecv")
+plotLog('../logs/log1.csv', "Versione dopo Debug")
+plotLog('../logs/log2.csv', "Versione con check del partner")
+plotLog('../logs/log3.csv', "Versione senza sendrecv")

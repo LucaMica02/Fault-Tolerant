@@ -48,9 +48,9 @@ We are using **OpenMPI** with **ULFM** support. Compilation and execution are pe
 
 - `/logs`
   - `log.csv`: Initial version
-  - `log1.csv`: Version with partner check
-  - `log2.csv`: Uses `Isend/Irecv` instead of `sendrecv`
-  - `log3.csv`: Post-debug version
+  - `log1.csv`: Post-debug version
+  - `log2.csv`: Version with partner check 
+  - `log3.csv`: Uses `Isend/Irecv` instead of `sendrecv`
 
 - `/draws`
   - Diagrams explaining the different AllReduce algorithm implementations
