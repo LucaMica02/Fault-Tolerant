@@ -186,9 +186,6 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
             j = data->inactive_ranks_count;
             data->inactive_ranks_count += data->active_ranks_count - p - nf;
             data->inactive_ranks = (int *)realloc(data->inactive_ranks, data->inactive_ranks_count * sizeof(int));
-            int block_size = *distance;
-            int num_of_blocks = data->active_ranks_count / block_size;
-            int rank_xblock = p / num_of_blocks;
             int new_array[p];
             total_count = 0;
             block_count = 0;
@@ -196,7 +193,7 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
             /* Choose which ranks will be the actives */
             while (i < data->active_ranks_count)
             {
-                if (i % block_size == 0) // reset the block_count if a new block is encountered
+                if (i % (*distance * k) == 0) // reset the block_count if a new block is encountered
                     block_count = 0;
                 /*
                  * Check if the rank is alive
@@ -205,7 +202,7 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
                  */
                 if (!contains(ranks_gc, data->active_ranks[i], nf + inactive_nf))
                 {
-                    if ((block_count < rank_xblock) && !contains(ranks_gc, data->active_ranks[i ^ *distance], nf + inactive_nf))
+                    if ((block_count < *distance) && !contains(ranks_gc, data->active_ranks[i ^ ((*distance * k) / 2)], nf + inactive_nf))
                     {
                         new_array[total_count++] = data->active_ranks[i]; // take it
                         block_count++;

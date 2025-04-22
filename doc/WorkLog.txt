@@ -41,6 +41,9 @@ Intial Period:
     - Ottimizzazione RD
     - Refactoring RD
 
+22 Aprile - 29 Aprile 
+    - Report
+
 NEXT:
     - Preparare log per incontro giovedi *
     - Implementare v2 dividendo il buffer in chuncks
@@ -81,8 +84,8 @@ NEXT:
     - Ottimizzazione
     - Altro algoritmo
 
-* Review Report + README
 * Fix deadlock e wrong result 
+* README repo
 * Comparazione tempi normale e fault tolerant [senza fault]
 * Refactoring errhandler
 

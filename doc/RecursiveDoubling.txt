@@ -5,7 +5,7 @@ OBB: Recursive Doubling Allreduce Fault Tolerante
 - Uso due comunicatori uno globale e uno per gli attivi
 - Tutti i processi entrano nella computazione della recursive doubling 
 - I processi attivi computano, gli altri osservano 
-- Alla fine di ogni passo ho una barriera che viene usata per notificare i fault [comm globale]
+- All inizio di ogni passo ho una barriera che viene usata per notificare i fault [comm globale]
 - Ad ogni passo prima di fare sendrecv vedo se ho avuto un errore al passo precedente 
 - Se si chiamo errhandler
     - Controllo fault su comunicatore globale e lo aggiusto, ma mantengo il vecchio
@@ -16,10 +16,9 @@ OBB: Recursive Doubling Allreduce Fault Tolerante
         - Tutti i nodi controllano chi è fallito nel comunicatore attivo [3.0]
             - Se abbiamo abbastanza nodi inattivi [3.1]
                 - Mi calcolo: 
-                    - Chi deve svegliare nodo inattivo [3.1.0]
-                    - Chi deve inviare dati al processo corrotto [3.1.1]
-                    - Chi è corrotto e deve ricevere i dati [3.1.2]
-                    - Chi è inattivo e deve essere svegliato [3.1.3]
+                    - Chi deve svegliare inattivi e mandare dati ai rank corrotti [3.1.0]
+                    - Chi è corrotto [3.1.1]
+                    - Chi è inattivo e deve essere svegliato [3.1.2]
             - Altrimenti [3.2]
                 - Mi calcolo la potenza di due minore più vicina [3.2.0]
                 - Scelgo i rank che saranno attivi [3.2.1]
@@ -43,8 +42,8 @@ OBB: Recursive Doubling Allreduce Fault Tolerante
     devo svegliare e i rank attivi che devono svegliarli
 2.0 -> Abbiamo due step:
     2.1 -> Check se rank inattivo è fallito 
-        2.2 -> Come primo punto controlliamo se esistono rank inattivi 
-        2.3 -> Poi per ogni rank fallito cerco una corrispondenza nell'array degli 
+        2.1.0 -> Come primo punto controlliamo se esistono rank inattivi 
+        2.1.1 -> Poi per ogni rank fallito cerco una corrispondenza nell'array degli 
             inattivi se la trovo ritorno 1 altrimenti ritorno 0
     2.2 -> Sistema la struttura inactive_ranks: itero per ogni rank inattivo, e controllo
         se è fallito, se si incremento un contatore altrimenti riscrivo il rank nell'array 
@@ -52,26 +51,29 @@ OBB: Recursive Doubling Allreduce Fault Tolerante
 3.0 -> Per ogni rank fallito cerco una corrispondenza nell'array degli 
     attivi se la trovo ritorno 1 altrimenti ritorno 0
     3.1 -> check se numero di nodi attivi falliti <= numero di rank inattivi sopravvissuti
-        3.1.0 -> Il nodo precedente al nodo fallito svegliarà il processo inattivo, e gli 
-            invierà poi i dati corretti, se il nodo fallito è il primo del blocco, sarà il 
-            nodo seguente a svegliare il processo in quanto il nodo precedente avrà dei dati
-            diversi rispetto al nodo che è fallito
-        3.1.1 -> Il nodo precedente al nodo corrotto gli invierà i dati corretti, se il
-            nodo corrotto è il primo del blocco, sarà il nodo seguente a inviargli i dati, 
-            per la stessa ragione descritta sopra
-        3.1.2 -> Se il nostro rank == (rank del nodo fallito ^ distance del passo precedente) 
-            abbiamo i dati corrotti e riceviamo i dati dal rank successivo se siamo i primi del
-            blocco, altrimenti dal rank precedente
-        3.1.3 -> I processi inattivi da svegliare vengono presi dalla coda dei rank degli 
+        3.1.0 -> Abbiamo blocchi di distance / 2 ranks che condividono gli stessi dati 
+            per ogni blocco il primo rank che non è fallito e non ha i dati corrotti sarà il
+            master del blocco ed è incaricato di svegliare gli inattivi e inviargli i dati 
+            e di inviare i dati ai rank corrotti (sempre all'interno dello stesso blocco).
+            Dati due rank r1 e r2 se r1 / distance == r2 / distance, significa che siamo 
+            nello stesso blocco, prendo distance / 2, perchè sto considerando i fallimenti del
+            passo precedente.
+            Per i rank corrotti devo assicurarmi che non siano falliti altrimenti invio i 
+            dati a un rank fallito che non li riceverà mai e rimango in attesa infinita
+        3.1.1 -> Per ogni processo fallito calcolo il corrispettivo corrotto corr, se 
+            corr == rank siamo noi i corrotti
+        3.1.2 -> I processi inattivi da svegliare vengono presi dalla coda dei rank degli 
             inattivi, per cui ogni processo inattivo, calcola la sua posizione nell'array, 
             se la nostra posizione è >= (numero totale di processi inattivi - numero di processi 
             attivi falliti) allora ci aspettiamo di essere svegliati da un processo attivo
     3.2 -> Altrimenti se numero di nodi attivi falliti > numero di rank inattivi sopravvissuti
         3.2.0 -> Riduco alla potenza minore di due più vicina p' = 2**[log2 p], dove p è il numero
             attuale di processi attivi sopravvissutie e p' sarà il nuovo numero di processi attivi
-        3.2.1 -> Scelgo p' processi che rimarranno attivi nel seguente modo:
-            itero sull'array dei processi attivi e scelgo ennuple da d processi a blocchi di d*2 con 
-            il nuovo valore di d, assicurandomi di non scegliere rank falliti nè corrotti
+        3.2.1 -> Calcolo il nuovo valore di distance d', dato che per passare da p a p'
+            abbiamo ridotti la grandezza del comunicatore attivo di k, d' = d / k, 
+            avremo quindi adesso d blocchi da d' rank che condividono gli stessi dati e rifaremo il passo d'.
+            Per costruire il nuovo array degli attivi, itero su ogni rank attivo, e controllo non sia fallito,
+            se ho ancora spazio nel blocco lo inserisco tra gli attivi, altrimenti lo metto tra gli inattivi
     3.3 -> Il vecchio comunicatore old_comm ha i rank relativi alla struttura attuale data, uso quindi
         quel comunicatore per prendermi il gruppo di tutti i rank, poi creo il gruppo dei sopravvissuti
         a partire da active ranks che sarà un sottogruppo del gruppo originale e alla fine creo il 
@@ -97,11 +99,11 @@ OBB: Recursive Doubling Allreduce Fault Tolerante
 - Errori diversi da processo fallito 
     -> Quando intercetto un errore mi assicuro che l'errore sia l'intero 75, prima di 
         gestirlo, se dovesse essere diverso, aborto tutto il comunicatore globale
-        (Warning: 75 non è un errore di MPI Standard)
+        (Warning: 75 non è un errore di MPI Standard, ma è MPIX_ERR_PROC_FAILED)
 - Situazione in cui ho troppi fault per il passo in cui mi trovo 
     -> All'i-esimo passo avremo distance = 2^i; ovvero i rank a blocchi di distance size 
         hanno gli stessi dati per cui possiamo supportare failure a meno che non abbiamo 
-        tutti i processi di un blocco che sono falliti
+        tutti i processi di un blocco che sono falliti o corrotti
     -> Possiamo estendere questa situazione, i blocchi comunicano a coppie ad esempio al passo 1
         con distance = 2 i primi due processi (0,1) comunicano con i processi (2,3), (4,5) con (6,7)
         e così via, questo significa che la comunicazione avviene a blocchi di distance * 2 dati, se 
@@ -230,3 +232,28 @@ Come posso risovlere?
     sendrecv, quindi non è così raro che questo errore si verific 
 * Un altro errore che accade in rari casi è dovuto a processi che notificano morti diverse,
     bisognerebbe approfondire come le chiamate ack/get_acked in ULFM sono realizzate 
+
+## WRONG RESULT 
+- Peggior caso, (silent error), se si verifica non me ne accorgo
+- Si può verificare nelle implementazioni v2 e v3, quando notifico morte del partner che in 
+    realtà non è morto
+- Problema, come rilevo l'errore?
+1. Probabilistico 
+    --> eseguo una funzione hash su n elementi random nel buffer finale e verifico se l' hashcode 
+        generato è uguale per tutti
+        - Facile da implementare 
+        - Posso avere collisioni
+        - Overhead
+2. Deterministico
+    - Se rilevo partner morto durante lo step send/recv, mi devo assicurare che lo sia veramente
+    1. Mi salvo il rank del partner morto r
+    2. Al passo successivo devo avere error != 0
+    3. Devo trovare r in rank_gc
+
+## DEADLOCK
+- Rilevamento del deadlock all'interno del programma
+- Mi devo accorgere quando si sta verifando il deadlock 
+- Si può verificare nella chiamate MPI che involvonno la comunicazione 
+    tra più processi
+- Idea: associo un timeout ad ogni chiamata, quando faccio la chamata lancio un thread che se non viene
+    killato dopo N secondi chiama l'abort

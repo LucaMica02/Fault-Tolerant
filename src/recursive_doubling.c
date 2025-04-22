@@ -21,6 +21,8 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
     /* Recursive Doubling Body */
     for (distance = 1; distance < data->active_ranks_count; distance *= 2)
     {
+        if (distance == 4 && data->original_rank == 0)
+            raise(SIGKILL);
         error = MPI_Barrier(world_comm); // Detect failure at the previous step
         if (error != MPI_SUCCESS)
         {
@@ -38,8 +40,8 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
         if (partner < size && data->active != 0)
         {
             /* Choose the recursive doubling version to test */
-            // recursive_doubling_v1(src, dst, send_size, comm, datatype, partner);
-            recursive_doubling_v2(src, dst, send_size, comm, datatype, partner);
+            recursive_doubling_v1(src, dst, send_size, comm, datatype, partner);
+            // recursive_doubling_v2(src, dst, send_size, comm, datatype, partner);
             // recursive_doubling_v3(src, dst, send_size, comm, datatype, partner, type_size);
 
             /*
@@ -87,9 +89,7 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
     }
 }
 
-/*
- * Recursive Doubling Allreduce standard implementation with Fault Tolerance
- */
+/* Standard implementation */
 void recursive_doubling_v1(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner)
 {
     MPI_Sendrecv(src, send_size, datatype, partner, 0,
@@ -97,10 +97,7 @@ void recursive_doubling_v1(void *src, void *dst, int send_size, MPI_Comm comm, M
                  comm, MPI_STATUS_IGNORE);
 }
 
-/*
- * Recursive Doubling Allreduce implementation with Fault Tolerance that does a check
- * if the partner is still alive before to actually do the sendrecv
- */
+/* Implementation that does a check if the partner is still alive before to actually do the sendrecv */
 void recursive_doubling_v2(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner)
 {
     int send_flag, recv_flag, test_flag, counter_flag;
@@ -130,10 +127,7 @@ void recursive_doubling_v2(void *src, void *dst, int send_size, MPI_Comm comm, M
     }
 }
 
-/*
- * Recursive Doubling Allreduce implementation with Fault Tolerance that
- * use the Isend/Irecv instead of the sendrecv
- */
+/* Implementation that use the Isend/Irecv instead of the sendrecv */
 void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner, int type_size)
 {
     int test_flag, counter_flag, chunk;
