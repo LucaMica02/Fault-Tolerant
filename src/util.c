@@ -1,5 +1,33 @@
 #include "header.h"
 
+void detect_failure(void *src, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype datatype, int *distance)
+{
+    int error = 0;
+    error = MPI_Barrier(world_comm); // Detect failure at the previous step
+    if (error != MPI_SUCCESS)
+    {
+        if (error != 75) // MPIX_ERR_PROC_FAILED
+        {
+            MPI_Comm_set_errhandler(world_comm, // abort the whole comm
+                                    MPI_ERRORS_ARE_FATAL);
+            MPI_Barrier(world_comm);
+            MPI_Abort(world_comm, error);
+        }
+        errhandler(&world_comm, &comm, distance, src, send_size, data, datatype);
+    }
+    else
+    {
+        if (data->dead_partner != -1)
+        {
+            MPI_Comm_set_errhandler(world_comm, // abort the whole comm
+                                    MPI_ERRORS_ARE_FATAL);
+            MPI_Barrier(world_comm);
+            MPI_Abort(world_comm, error);
+        }
+    }
+    data->dead_partner = -1; // reset it
+}
+
 void reduce_pow2(void *src, void *dst, int send_size, MPI_Comm world_comm, Data *data, MPI_Datatype datatype, MPI_Op op)
 {
     int p = (int)pow(2, floor(log2(data->original_size))); // closest lower power of two

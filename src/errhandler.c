@@ -44,6 +44,13 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
     old_comm = *pworld;
     *pworld = new_world;
 
+    /* Check if the dead partners are really dead to avoid wrong results */
+    if (data->dead_partner != -1 && !contains(ranks_gc, data->dead_partner, nf))
+    {
+        printf("%d rileva errore su partner %d\n", data->original_rank, data->dead_partner);
+        MPI_Abort(*pworld, 75); // MPIX_ERR_PROC_FAILED
+    }
+
     inactive_nf = 0;
     /* Check if is failed an inactive rank */
     if (data->inactive_ranks_count > 0 && is_failed(ranks_gc, data->inactive_ranks, nf, data->inactive_ranks_count))

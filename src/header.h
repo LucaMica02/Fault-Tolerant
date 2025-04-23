@@ -23,6 +23,7 @@ typedef struct
     int original_rank;
     int original_size;
     int master;
+    int dead_partner;
 } Data;
 
 /* General implementation of recursive doubling allreduce with fault tolerance */
@@ -32,13 +33,16 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
 void recursive_doubling_v1(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner);
 
 /* Implementation with partner check */
-void recursive_doubling_v2(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner);
+void recursive_doubling_v2(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner, Data *data);
 
 /* Implementation that use Isend/Irecv instead of sendrecv */
-void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner, int type_size);
+void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner, int type_size, Data *data);
 
 /* Function that manage the events where one or more rank fail */
 void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int send_size, Data *data, MPI_Datatype datatype);
+
+/* Detect the failure */
+void detect_failure(void *src, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype datatype, int *distance);
 
 /* Function that reduce the number of ranks to the closest lower power of two */
 void reduce_pow2(void *src, void *dst, int send_size, MPI_Comm world_comm, Data *data, MPI_Datatype datatype, MPI_Op op);

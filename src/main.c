@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
     data->inactive_ranks_count = 0;
     data->active_ranks = (int *)malloc(sizeof(int) * data->active_ranks_count);
     data->inactive_ranks = (int *)malloc(sizeof(int));
+    data->dead_partner = -1;
     for (int i = 0; i < size; i++)
     {
         data->active_ranks[i] = i;

@@ -5,12 +5,11 @@
  */
 void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype datatype, MPI_Op op)
 {
-    int rank, size, distance, error, partner, type_size;
+    int rank, size, distance, partner, type_size;
 
     MPI_Type_size(datatype, &type_size);
     MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &size);
-    error = 0;
 
     reduce_pow2(src, dst, send_size, world_comm, data, datatype, op); // Reduce to power of two
 
@@ -21,15 +20,7 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
     /* Recursive Doubling Body */
     for (distance = 1; distance < data->active_ranks_count; distance *= 2)
     {
-        if (distance == 4 && data->original_rank == 0)
-            raise(SIGKILL);
-        error = MPI_Barrier(world_comm); // Detect failure at the previous step
-        if (error != MPI_SUCCESS)
-        {
-            if (error != 75) // MPIX_ERR_PROC_FAILED
-                MPI_Abort(world_comm, error);
-            errhandler(&world_comm, &comm, &distance, src, send_size, data, datatype);
-        }
+        detect_failure(src, send_size, world_comm, comm, data, datatype, &distance);
 
         /* Compute the right partner */
         if (data->active == 1)
@@ -40,33 +31,30 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
         if (partner < size && data->active != 0)
         {
             /* Choose the recursive doubling version to test */
-            recursive_doubling_v1(src, dst, send_size, comm, datatype, partner);
-            // recursive_doubling_v2(src, dst, send_size, comm, datatype, partner);
-            // recursive_doubling_v3(src, dst, send_size, comm, datatype, partner, type_size);
+            // recursive_doubling_v1(src, dst, send_size, comm, datatype, partner);
+            // recursive_doubling_v2(src, dst, send_size, comm, datatype, partner, data);
+            recursive_doubling_v3(src, dst, send_size, comm, datatype, partner, type_size, data);
 
             /*
              * We accumulate the result in src to send it at the parner in the next iteration
              * to avoid doing the memcpy at the end, if is the last reduction take the dst like a out buffer
              */
-            if (distance * 2 >= data->active_ranks_count)
+            if (data->dead_partner == -1)
             {
-                MPI_Reduce_local(src, dst, send_size, datatype, op);
-            }
-            else
-            {
-                MPI_Reduce_local(dst, src, send_size, datatype, op);
+                if (distance * 2 >= data->active_ranks_count)
+                {
+                    MPI_Reduce_local(src, dst, send_size, datatype, op);
+                }
+                else
+                {
+                    MPI_Reduce_local(dst, src, send_size, datatype, op);
+                }
             }
         }
     }
 
     /* Detect failure at the last step */
-    error = MPI_Barrier(world_comm);
-    if (error != MPI_SUCCESS)
-    {
-        if (error != 75) // MPIX_ERR_PROC_FAILED
-            MPI_Abort(world_comm, error);
-        errhandler(&world_comm, &comm, &distance, src, send_size, data, datatype);
-    }
+    detect_failure(src, send_size, world_comm, comm, data, datatype, &distance);
 
     MPI_Comm_set_errhandler(world_comm, // no more tolerating failure
                             MPI_ERRORS_ARE_FATAL);
@@ -98,7 +86,7 @@ void recursive_doubling_v1(void *src, void *dst, int send_size, MPI_Comm comm, M
 }
 
 /* Implementation that does a check if the partner is still alive before to actually do the sendrecv */
-void recursive_doubling_v2(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner)
+void recursive_doubling_v2(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner, Data *data)
 {
     int send_flag, recv_flag, test_flag, counter_flag;
 
@@ -125,10 +113,14 @@ void recursive_doubling_v2(void *src, void *dst, int send_size, MPI_Comm comm, M
                      dst, send_size, datatype, partner, 0,
                      comm, MPI_STATUS_IGNORE);
     }
+    else // save the rank of your partner to furher check if it's really dead
+    {
+        data->dead_partner = data->active_ranks[partner];
+    }
 }
 
 /* Implementation that use the Isend/Irecv instead of the sendrecv */
-void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner, int type_size)
+void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner, int type_size, Data *data)
 {
     int test_flag, counter_flag, chunk;
 
@@ -162,6 +154,12 @@ void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm comm, M
             MPI_Testall(2, requests, &test_flag, MPI_STATUSES_IGNORE);
             counter_flag++;
             usleep(1000); // sleep for 0.001 sec
+        }
+
+        MPI_Testall(2, requests, &test_flag, MPI_STATUSES_IGNORE);
+        if (test_flag == 0) // save the rank of your partner to furher check if it's really dead
+        {
+            data->dead_partner = data->active_ranks[partner];
         }
     }
 }
