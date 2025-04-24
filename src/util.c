@@ -1,16 +1,64 @@
 #include "header.h"
 
+void *barrier_thread(void *arg)
+{
+    /* A thread run the MPI_Barrier */
+    BarrierArgs *args = (BarrierArgs *)arg;
+    *(args->return_code) = MPI_Barrier(args->comm);
+
+    /* Set the flag timed_out to false and wake up the main thread */
+    pthread_mutex_lock(args->mutex);
+    *(args->timed_out) = 0;
+    pthread_cond_signal(args->cond);
+    pthread_mutex_unlock(args->mutex);
+
+    return NULL;
+}
+
+/* MPI_Barrier with a timeout associated */
+int MPI_Barrier_timeout(MPI_Comm comm)
+{
+    pthread_t tid;
+    pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+    int timed_out = 1;
+    int return_code = 0;
+
+    /* Create the thread */
+    BarrierArgs args = {comm, &mutex, &cond, &timed_out, &return_code};
+    pthread_create(&tid, NULL, barrier_thread, &args);
+
+    /* Set the timeout */
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    ts.tv_sec += TIMEOUT;
+
+    pthread_mutex_lock(&mutex);
+    while (timed_out)
+    {
+        int rc = pthread_cond_timedwait(&cond, &mutex, &ts);
+        if (rc == ETIMEDOUT)
+        {
+            /* If the timeout is reached abort the whole comm because a deadlock is detected */
+            printf("DEADLOCK\n");
+            pthread_mutex_unlock(&mutex);
+            MPI_Abort(comm, 16); // MPI_ERR_OTHER
+        }
+    }
+
+    pthread_mutex_unlock(&mutex);
+    pthread_join(tid, NULL);
+    return return_code;
+}
+
 void detect_failure(void *src, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype datatype, int *distance)
 {
     int error = 0;
-    error = MPI_Barrier(world_comm); // Detect failure at the previous step
+    error = MPI_Barrier_timeout(world_comm); // Detect failure at the previous step
     if (error != MPI_SUCCESS)
     {
         if (error != 75) // MPIX_ERR_PROC_FAILED
         {
-            MPI_Comm_set_errhandler(world_comm, // abort the whole comm
-                                    MPI_ERRORS_ARE_FATAL);
-            MPI_Barrier(world_comm);
             MPI_Abort(world_comm, error);
         }
         errhandler(&world_comm, &comm, distance, src, send_size, data, datatype);
@@ -19,9 +67,7 @@ void detect_failure(void *src, int send_size, MPI_Comm world_comm, MPI_Comm comm
     {
         if (data->dead_partner != -1)
         {
-            MPI_Comm_set_errhandler(world_comm, // abort the whole comm
-                                    MPI_ERRORS_ARE_FATAL);
-            MPI_Barrier(world_comm);
+            printf("WRONG\n");
             MPI_Abort(world_comm, error);
         }
     }

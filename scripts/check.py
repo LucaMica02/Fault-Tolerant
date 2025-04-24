@@ -6,6 +6,8 @@ def getParameters():
     SEGFAULT = False
     ABORT = False
     RIGHT_RESULT = False
+    D = False
+    WR = False
     with open("../out/test_log.txt", "r") as file:
         lines = file.readlines()
     for line in lines:
@@ -29,10 +31,10 @@ def getParameters():
                 ABORT = True
     result = calcExpectedRes(N-1, BUF_SIZE)
     expectedKill = countKill()
-    realKill, RIGHT_RESULT = mpiOutput(N, result)
+    realKill, RIGHT_RESULT, D, WR = mpiOutput(N, result)
     if TIME > TIMEOUT:
         DEADLOCK = True
-    return [N, DELAY, THRESHOLD, BUF_SIZE, expectedKill, len(realKill), TIME, DEADLOCK, SEGFAULT, ABORT, RIGHT_RESULT]
+    return [N, DELAY, THRESHOLD, BUF_SIZE, expectedKill, len(realKill), TIME, DEADLOCK, SEGFAULT, ABORT, RIGHT_RESULT, D, WR]
 
 # Calculate the expected result 
 def calcExpectedRes(N, BUF_SIZE):
@@ -52,6 +54,8 @@ def countKill():
 # Read all the results from mpi_out
 def mpiOutput(N, result):
     RIGHT_RESULT = True
+    D = False
+    WRONG = False
     killed = []
     survivors = set()
     with open("../out/mpi_out.txt", "r") as file:
@@ -62,17 +66,21 @@ def mpiOutput(N, result):
             survivors.add(int(line[2]))
             if int(line[-1]) != result:
                 RIGHT_RESULT = False
+        elif line[0] == "DEADLOCK":
+            D = True
+        elif line[0] == "WRONG":
+            WRONG = True
     for i in range(N):
         if i not in survivors:
             killed.append(i)
-    return killed, RIGHT_RESULT
+    return killed, RIGHT_RESULT, D, WRONG
 
 parameters = getParameters()
 print(parameters)
 
 # Write on the csv file
 filename = "../log.csv"
-headers = ["N", "DELAY", "THRESHOLD", "BUF SIZE", "KILLED DOCKER", "REAL MPI KILLED", "TIME", "DEADLOCK", "SEGFAULT", "ABORT", "RIGHT RESULT"]
+headers = ["N", "DELAY", "THRESHOLD", "BUF SIZE", "KILLED DOCKER", "REAL MPI KILLED", "TIME", "DEADLOCK", "SEGFAULT", "ABORT", "RIGHT RESULT", "D", "WR"]
 
 # If not exists create the file and write the headers
 if not os.path.exists(filename):

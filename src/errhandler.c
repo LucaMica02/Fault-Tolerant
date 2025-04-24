@@ -47,7 +47,7 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
     /* Check if the dead partners are really dead to avoid wrong results */
     if (data->dead_partner != -1 && !contains(ranks_gc, data->dead_partner, nf))
     {
-        printf("%d rileva errore su partner %d\n", data->original_rank, data->dead_partner);
+        printf("WRONG\n");
         MPI_Abort(*pworld, 75); // MPIX_ERR_PROC_FAILED
     }
 
@@ -303,7 +303,7 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
     MPI_Group_free(&group_f);
     free(ranks_gf);
     free(ranks_gc);
-    MPI_Barrier(*pworld);
+    MPI_Barrier_timeout(*pworld);
     MPI_Comm_set_errhandler(*pworld, // tolerate the failure again
                             MPI_ERRORS_RETURN);
 }

@@ -15,7 +15,7 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
 
     MPI_Comm_set_errhandler(world_comm, // Tolerate failure
                             MPI_ERRORS_RETURN);
-    MPI_Barrier(world_comm);
+    MPI_Barrier_timeout(world_comm);
 
     /* Recursive Doubling Body */
     for (distance = 1; distance < data->active_ranks_count; distance *= 2)
@@ -31,9 +31,9 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
         if (partner < size && data->active != 0)
         {
             /* Choose the recursive doubling version to test */
-            // recursive_doubling_v1(src, dst, send_size, comm, datatype, partner);
+            recursive_doubling_v1(src, dst, send_size, comm, datatype, partner);
             // recursive_doubling_v2(src, dst, send_size, comm, datatype, partner, data);
-            recursive_doubling_v3(src, dst, send_size, comm, datatype, partner, type_size, data);
+            // recursive_doubling_v3(src, dst, send_size, comm, datatype, partner, type_size, data);
 
             /*
              * We accumulate the result in src to send it at the parner in the next iteration
@@ -58,7 +58,7 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
 
     MPI_Comm_set_errhandler(world_comm, // no more tolerating failure
                             MPI_ERRORS_ARE_FATAL);
-    MPI_Barrier(world_comm);
+    MPI_Barrier_timeout(world_comm);
 
     /* Active ranks send back result to inactive ones */
     if (data->active == 0)
@@ -100,11 +100,11 @@ void recursive_doubling_v2(void *src, void *dst, int send_size, MPI_Comm comm, M
     MPI_Isend(&send_flag, 1, MPI_INT, partner, 0, comm, &requests[0]);
     MPI_Irecv(&recv_flag, 1, MPI_INT, partner, 0, comm, &requests[1]);
     // Wait for both operations to complete
-    while (test_flag == 0 && counter_flag < 10)
+    while (test_flag == 0 && counter_flag < 1)
     {
         MPI_Testall(2, requests, &test_flag, MPI_STATUSES_IGNORE);
         counter_flag++;
-        usleep(10000); // sleep for 0.01 sec
+        usleep(100); // sleep for 0.0001 sec
     }
 
     if (test_flag == 1) // your partner is still alive
