@@ -249,6 +249,7 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
     if (wk_up == 1)
     {
         err = MPI_Recv(src, send_size, datatype, MPI_ANY_SOURCE, 0, old_comm, MPI_STATUS_IGNORE);
+        printf("%d recv %d\n", data->original_rank, src[0]);
     }
     if (to_recv == 1)
     {
@@ -303,7 +304,7 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
     MPI_Group_free(&group_f);
     free(ranks_gf);
     free(ranks_gc);
-    MPI_Barrier_timeout(*pworld);
+    MPI_Barrier(*pworld);
     MPI_Comm_set_errhandler(*pworld, // tolerate the failure again
                             MPI_ERRORS_RETURN);
 }

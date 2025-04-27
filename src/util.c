@@ -1,10 +1,12 @@
 #include "header.h"
 
-void *barrier_thread(void *arg)
+void *send_recv_thread(void *arg)
 {
-    /* A thread run the MPI_Barrier */
+    /* A thread run the MPI_Sendrecv */
     BarrierArgs *args = (BarrierArgs *)arg;
-    *(args->return_code) = MPI_Barrier(args->comm);
+    MPI_Sendrecv(args->src, args->send_size, args->datatype, args->partner, 0,
+                 args->dst, args->send_size, args->datatype, args->partner, 0,
+                 args->comm, MPI_STATUS_IGNORE);
 
     /* Set the flag timed_out to false and wake up the main thread */
     pthread_mutex_lock(args->mutex);
@@ -15,18 +17,17 @@ void *barrier_thread(void *arg)
     return NULL;
 }
 
-/* MPI_Barrier with a timeout associated */
-int MPI_Barrier_timeout(MPI_Comm comm)
+/* MPI_Sendrecv with a timeout associated */
+void MPI_Sendrecv_timeout(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner)
 {
     pthread_t tid;
     pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
     int timed_out = 1;
-    int return_code = 0;
 
     /* Create the thread */
-    BarrierArgs args = {comm, &mutex, &cond, &timed_out, &return_code};
-    pthread_create(&tid, NULL, barrier_thread, &args);
+    BarrierArgs args = {src, dst, send_size, datatype, partner, comm, &mutex, &cond, &timed_out};
+    pthread_create(&tid, NULL, send_recv_thread, &args);
 
     /* Set the timeout */
     struct timespec ts;
@@ -48,30 +49,6 @@ int MPI_Barrier_timeout(MPI_Comm comm)
 
     pthread_mutex_unlock(&mutex);
     pthread_join(tid, NULL);
-    return return_code;
-}
-
-void detect_failure(void *src, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype datatype, int *distance)
-{
-    int error = 0;
-    error = MPI_Barrier_timeout(world_comm); // Detect failure at the previous step
-    if (error != MPI_SUCCESS)
-    {
-        if (error != 75) // MPIX_ERR_PROC_FAILED
-        {
-            MPI_Abort(world_comm, error);
-        }
-        errhandler(&world_comm, &comm, distance, src, send_size, data, datatype);
-    }
-    else
-    {
-        if (data->dead_partner != -1)
-        {
-            printf("WRONG\n");
-            MPI_Abort(world_comm, error);
-        }
-    }
-    data->dead_partner = -1; // reset it
 }
 
 void reduce_pow2(void *src, void *dst, int send_size, MPI_Comm world_comm, Data *data, MPI_Datatype datatype, MPI_Op op)

@@ -43,7 +43,8 @@ int main(int argc, char *argv[])
     {
         res += (result[i] % 17);
     }
-    printf("Hello from %d of %d and the result is: %d\n", data->original_rank, data->original_size, res);
+
+    printf("Hello from %d of %d and the bf: %d result is: %d\n", data->original_rank, data->original_size, result[0], res);
     MPI_Finalize();
     free(data->inactive_ranks);
     free(data->active_ranks);
