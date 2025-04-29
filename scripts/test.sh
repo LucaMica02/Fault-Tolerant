@@ -20,3 +20,9 @@ echo "TIMEOUT = $TIMEOUT" >> ../out/test_log.txt
 } >> ../out/test_log.txt 2>&1
 
 python3 ../scripts/check.py
+
+rm ../out/mpi_out.txt
+rm ../out/docker_out.txt
+rm ../out/test_log.txt
+
+sleep 1

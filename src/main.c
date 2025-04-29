@@ -5,9 +5,15 @@
  */
 int main(int argc, char *argv[])
 {
-    MPI_Init(&argc, &argv);
-    int size, rank;
-    int res;
+    int init_flag, size, rank, res;
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_SERIALIZED, &init_flag);
+
+    if (init_flag < MPI_THREAD_SERIALIZED)
+    {
+        fprintf(stderr, "Error: MPI does not provide MPI_THREAD_SERIALIZED support!\n");
+        MPI_Abort(MPI_COMM_WORLD, 1);
+    }
+
     Data *data = (Data *)malloc(sizeof(Data));
 
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -37,6 +43,7 @@ int main(int argc, char *argv[])
     }
 
     recursive_doubling(buffer, result, buf_size, MPI_COMM_WORLD, MPI_COMM_WORLD, data, MPI_INT, MPI_SUM);
+    // printf("Hello from %d b_size: %d\n", data->original_rank, buf_size);
 
     res = 0;
     for (int i = 0; i < buf_size; i++)
@@ -44,10 +51,14 @@ int main(int argc, char *argv[])
         res += (result[i] % 17);
     }
 
-    printf("Hello from %d of %d and the bf: %d result is: %d\n", data->original_rank, data->original_size, result[0], res);
-    MPI_Finalize();
+    printf("Hello from %d of %d and the result is: %d\n", data->original_rank, data->original_size, res);
     free(data->inactive_ranks);
     free(data->active_ranks);
     free(data);
+    free(buffer);
+    free(result);
+    // fprintf(stderr, "main1 of RD from %d\n", rank);
+    MPI_Finalize();
+    // fprintf(stderr, "main2 of RD from %d\n", rank);
     return 0;
 }

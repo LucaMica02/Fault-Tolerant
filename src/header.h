@@ -74,4 +74,7 @@ int is_failed(int *ranks_gc, int *ranks, int n, int m);
 /* MPI_Sendrecv with a timeout associated */
 void MPI_Sendrecv_timeout(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner);
 
+void log_failed(int *ranks, int nf);
+void log_struct(Data *data);
+
 #endif

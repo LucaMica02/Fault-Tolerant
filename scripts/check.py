@@ -77,6 +77,14 @@ def mpiOutput(N, result):
 
 parameters = getParameters()
 print(parameters)
+if parameters[7] == True or parameters[10] == False:
+    with open("../out/mpi_out.txt", "r") as file:
+        print(file.read())
+    with open("../out/test_log.txt", "r") as file:
+        print(file.read())
+    with open("../out/docker_out.txt", "r") as file:
+        print(file.read())
+
 
 # Write on the csv file
 filename = "../log.csv"

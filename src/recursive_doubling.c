@@ -20,6 +20,7 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
     /* Recursive Doubling Body */
     for (distance = 1; distance < data->active_ranks_count; distance *= 2)
     {
+        // printf("Hi from %d at %d\n", data->original_rank, distance);
         error = MPI_Barrier(world_comm); // Detect failure at the previous step
         if (error != MPI_SUCCESS)
         {
@@ -141,9 +142,10 @@ void recursive_doubling_v2(void *src, void *dst, int send_size, MPI_Comm comm, M
 
     if (test_flag == 1) // your partner is still alive
     {
-        MPI_Sendrecv(src, send_size, datatype, partner, 0,
+        /*MPI_Sendrecv(src, send_size, datatype, partner, 0,
                      dst, send_size, datatype, partner, 0,
-                     comm, MPI_STATUS_IGNORE);
+                     comm, MPI_STATUS_IGNORE);*/
+        MPI_Sendrecv_timeout(src, dst, send_size, comm, datatype, partner);
     }
     else // save the rank of your partner to furher check if it's really dead
     {

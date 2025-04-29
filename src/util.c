@@ -49,6 +49,8 @@ void MPI_Sendrecv_timeout(void *src, void *dst, int send_size, MPI_Comm comm, MP
 
     pthread_mutex_unlock(&mutex);
     pthread_join(tid, NULL);
+    pthread_mutex_destroy(&mutex);
+    pthread_cond_destroy(&cond);
 }
 
 void reduce_pow2(void *src, void *dst, int send_size, MPI_Comm world_comm, Data *data, MPI_Datatype datatype, MPI_Op op)

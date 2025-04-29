@@ -44,6 +44,8 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
     old_comm = *pworld;
     *pworld = new_world;
 
+    // log_failed(ranks_gc, nf);
+
     /* Check if the dead partners are really dead to avoid wrong results */
     if (data->dead_partner != -1 && !contains(ranks_gc, data->dead_partner, nf))
     {
@@ -235,6 +237,7 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
     MPI_Comm_group(old_comm, &group_c);
     MPI_Group_incl(group_c, data->active_ranks_count, data->active_ranks, &group_survivors);
     MPI_Comm_create(*pworld, group_survivors, &new_comm);
+    // MPIX_Comm_revoke(*pcomm);
     *pcomm = new_comm;
 
     /* Restore the data if necessary */
@@ -249,7 +252,6 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
     if (wk_up == 1)
     {
         err = MPI_Recv(src, send_size, datatype, MPI_ANY_SOURCE, 0, old_comm, MPI_STATUS_IGNORE);
-        printf("%d recv %d\n", data->original_rank, src[0]);
     }
     if (to_recv == 1)
     {
@@ -295,10 +297,13 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
         }
     }
 
+    // log_struct(data);
+
     if (to_send_size > 0)
         free(to_send);
     if (to_wk_up_size > 0)
         free(to_wk_up);
+    // MPIX_Comm_revoke(old_comm);
     MPI_Group_free(&group_survivors);
     MPI_Group_free(&group_c);
     MPI_Group_free(&group_f);

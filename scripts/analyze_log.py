@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 '''
-['N', 'DELAY', 'THRESHOLD', 'BUF SIZE', 'KILLED DOCKER', 'REAL MPI KILLED', 'TIME', 'DEADLOCK', 'SEGFAULT', 'ABORT', 'RIGHT RESULT']
-  0      1          2            3             4                 5             6         7           8          9           10         
+['N', 'DELAY', 'THRESHOLD', 'BUF SIZE', 'KILLED DOCKER', 'REAL MPI KILLED', 'TIME', 'DEADLOCK', 'SEGFAULT', 'ABORT', 'RIGHT RESULT', 'DEADLOCK DETECTED', 'WRONG RESULT DETECTED']
+  0      1          2            3             4                 5             6         7           8          9           10               11                     12
 '''
 
 def plotLog(filename, title):
@@ -16,6 +16,8 @@ def plotLog(filename, title):
     abort = 0
     wrongResult = 0
     ok = 0
+    dlock_detection = 0
+    wr_detection = 0
 
     with open(filename, mode='r') as file:
         reader = csv.reader(file)
@@ -30,10 +32,16 @@ def plotLog(filename, title):
                         deadlock += 1
                     # abort
                     elif row[9] == 'True':
-                        if row[10] == 'True' and survived > 0:
+                        if row[10] == 'False':
+                            wrongResult += 1
+                        elif survived > 0:
                             ok += 1
                             N.append(int(row[0]))
-                            KILLED.append(int(row[5]))
+                            KILLED.append(min(int(row[5]), int(row[4])))
+                        elif row[11] == 'True': # deadlock detection
+                            dlock_detection += 1
+                        elif row[12] == 'True': # wrong result detection
+                            wr_detection += 1
                         else:
                             abort += 1
                     # wrong result
@@ -42,7 +50,7 @@ def plotLog(filename, title):
                     else:
                         ok += 1
                         N.append(int(row[0]))
-                        KILLED.append(int(row[5]))
+                        KILLED.append(min(int(row[5]), int(row[4])))
                     rows += 1
             else:
                 rows += 1
@@ -52,6 +60,8 @@ def plotLog(filename, title):
     abort_perc = (abort / rows) * 100
     wrongResult_perc = (wrongResult / rows) * 100
     ok_perc = (ok / rows) * 100
+    dlock_detection_perc = (dlock_detection / rows) * 100
+    wr_detection_perc = (wr_detection / rows) * 100
     N_avg = round((sum(N) / len(N)), 2)
     N_stdd = round(np.std(N, ddof=1), 2)
     KILLED_avg = round((sum(KILLED) / len(KILLED)), 2)
@@ -60,9 +70,11 @@ def plotLog(filename, title):
     """
     print("DEADLOCK: %", deadlock_perc)
     print("ABORT: %", abort_perc)
-    print("NO KILL: %", noKill_perc)
+    #print("NO KILL: %", noKill_perc)
     print("WRONG RESULT: %", wrongResult_perc)
     print("OK: %", ok_perc)
+    print("DEADLOCK DETECTION: %", dlock_detection_perc)
+    print("WRONG RESULT DETECTION: %", wr_detection_perc)
     print("Total rows:", total_rows)
     print("Useful Rows:", rows)
     print("N AVG", N_avg)
@@ -70,10 +82,11 @@ def plotLog(filename, title):
     print("N STDD", N_stdd)
     print("KILLED STDD", KILLED_stdd)
     """
+    
 
     # Data to plot
-    labels = ["Deadlock", "Abort", "Wrong Result", "OK"]
-    sizes = [deadlock_perc, abort_perc, wrongResult_perc, ok_perc]
+    labels = ["Deadlock", "Deadlock Detection", "Wrong Result", "Wrong Result Detection", "Abort", "OK"]
+    sizes = [deadlock_perc, dlock_detection_perc, wrongResult_perc, wr_detection_perc, abort_perc, ok_perc]
 
     # Create a simple pie chart
     wedges, texts, autotexts = plt.pie(sizes, labels=labels, autopct='%1.1f%%', center=(-1, 0))
@@ -109,7 +122,10 @@ def plotLog(filename, title):
     plt.title(title)
     plt.show()
 
-plotLog('../logs/log.csv', "Versione Iniziale")
-plotLog('../logs/log1.csv', "Versione dopo Debug")
-plotLog('../logs/log2.csv', "Versione con check del partner")
-plotLog('../logs/log3.csv', "Versione senza sendrecv")
+#plotLog('../logs/log.csv', "Versione Iniziale")
+#plotLog('../logs/log1.csv', "Versione dopo Debug")
+#plotLog('../logs/log2.csv', "Versione con check del partner")
+#plotLog('../logs/log3.csv', "Versione senza sendrecv")
+
+plotLog('../logs/log_v1.csv', "V1 Con Sendrecv")
+plotLog('../logs/log_v2.csv', "V2 Con Check Partner")
