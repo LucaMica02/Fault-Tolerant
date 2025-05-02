@@ -5,6 +5,8 @@
  */
 int main(int argc, char *argv[])
 {
+    clock_t start, end;
+    double difftime;
     int init_flag, size, rank, res;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_SERIALIZED, &init_flag);
 
@@ -42,16 +44,20 @@ int main(int argc, char *argv[])
         data->active_ranks[i] = i;
     }
 
+    start = clock();
     recursive_doubling(buffer, result, buf_size, MPI_COMM_WORLD, MPI_COMM_WORLD, data, MPI_INT, MPI_SUM);
     // printf("Hello from %d b_size: %d\n", data->original_rank, buf_size);
+    end = clock();
+    difftime = ((double)(end - start)) / CLOCKS_PER_SEC;
 
     res = 0;
     for (int i = 0; i < buf_size; i++)
     {
         res += (result[i] % 17);
     }
-
-    printf("Hello from %d of %d and the result is: %d\n", data->original_rank, data->original_size, res);
+    if (rank == 0)
+        printf("Time: %lf\n", difftime);
+    // printf("Hello from %d of %d and the result is: %d\n", data->original_rank, data->original_size, res);
     free(data->inactive_ranks);
     free(data->active_ranks);
     free(data);

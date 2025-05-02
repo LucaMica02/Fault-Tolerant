@@ -127,5 +127,6 @@ def plotLog(filename, title):
 #plotLog('../logs/log2.csv', "Versione con check del partner")
 #plotLog('../logs/log3.csv', "Versione senza sendrecv")
 
+plotLog('../logs/log_v0.csv', "Versione Classica Con Sendrecv")
 plotLog('../logs/log_v1.csv', "V1 Con Sendrecv")
 plotLog('../logs/log_v2.csv', "V2 Con Check Partner")

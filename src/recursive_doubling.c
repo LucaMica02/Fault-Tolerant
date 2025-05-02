@@ -112,10 +112,10 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
 /* Standard implementation */
 void recursive_doubling_v1(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner)
 {
-    /*MPI_Sendrecv(src, send_size, datatype, partner, 0,
+    MPI_Sendrecv(src, send_size, datatype, partner, 0,
                  dst, send_size, datatype, partner, 0,
-                 comm, MPI_STATUS_IGNORE);*/
-    MPI_Sendrecv_timeout(src, dst, send_size, comm, datatype, partner);
+                 comm, MPI_STATUS_IGNORE);
+    // MPI_Sendrecv_timeout(src, dst, send_size, comm, datatype, partner);
 }
 
 /* Implementation that does a check if the partner is still alive before to actually do the sendrecv */
