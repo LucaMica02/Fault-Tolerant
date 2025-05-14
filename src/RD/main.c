@@ -8,15 +8,7 @@ int main(int argc, char *argv[])
     clock_t start, end;
     double difftime;
     int init_flag, size, rank, res;
-    MPI_Init_thread(&argc, &argv, MPI_THREAD_SERIALIZED, &init_flag);
-
-    if (init_flag < MPI_THREAD_SERIALIZED)
-    {
-        fprintf(stderr, "Error: MPI does not provide MPI_THREAD_SERIALIZED support!\n");
-        MPI_Abort(MPI_COMM_WORLD, 1);
-    }
-
-    Data *data = (Data *)malloc(sizeof(Data));
+    MPI_Init(&argc, &argv);
 
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -31,6 +23,8 @@ int main(int argc, char *argv[])
         buffer[i] = rank;
     }
 
+    start = clock();
+    Data *data = (Data *)malloc(sizeof(Data));
     data->original_rank = rank;
     data->original_size = size;
     data->active = 1;
@@ -44,7 +38,6 @@ int main(int argc, char *argv[])
         data->active_ranks[i] = i;
     }
 
-    start = clock();
     recursive_doubling(buffer, result, buf_size, MPI_COMM_WORLD, MPI_COMM_WORLD, data, MPI_INT, MPI_SUM);
     // printf("Hello from %d b_size: %d\n", data->original_rank, buf_size);
     end = clock();

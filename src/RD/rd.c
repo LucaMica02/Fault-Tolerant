@@ -6,7 +6,7 @@
 int main(int argc, char *argv[])
 {
     setenv("OMPI_MCA_coll_tuned_use_dynamic_rules", "1", 1);
-    setenv("OMPI_MCA_coll_tuned_allreduce_algorithm", "2", 1); // Recursive Doubling
+    setenv("OMPI_MCA_coll_tuned_allreduce_algorithm", "3", 1); // Recursive Doubling
 
     int size, rank, res;
     clock_t start, end;
