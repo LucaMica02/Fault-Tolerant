@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mkdir -p ../out
+
 N=$((RANDOM % (16 - 4 + 1) + 4)) # 4 - 16
 DELAY=$((RANDOM % (4 - 2 + 1)+ 2)) # 2 - 4
 BUF_SIZE=$1 # 10000000 - 20000000

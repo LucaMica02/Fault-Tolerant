@@ -2,7 +2,7 @@ CC = mpicc
 CFLAGS = -Wall
 TARGET = main
 
-SRCS = raben.c
+SRCS = raben_all.c
 
 $(TARGET): $(SRCS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS)
