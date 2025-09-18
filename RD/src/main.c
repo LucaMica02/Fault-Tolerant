@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
     clock_t start, end;
     double difftime;
-    int init_flag, size, rank, res;
+    int size, rank, res;
     MPI_Init(&argc, &argv);
 
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -48,15 +48,21 @@ int main(int argc, char *argv[])
     {
         res += (result[i] % 17);
     }
-    if (rank == 0)
-        printf("Time: %lf\n", difftime);
-    // printf("Hello from %d of %d and the result is: %d\n", data->original_rank, data->original_size, res);
-    free(data->inactive_ranks);
-    free(data->active_ranks);
-    free(data);
-    free(buffer);
-    free(result);
+    //if (rank == 0)
+      //  printf("Time: %lf\n", difftime);
+    printf("Hello from %d of %d and the result is: %d\n", data->original_rank, data->original_size, res);
+    if (data->inactive_ranks != NULL)
+        free(data->inactive_ranks);
+    if (data->active_ranks != NULL)
+        free(data->active_ranks);
+    if (data != NULL)
+        free(data);
+    if (buffer != NULL)
+        free(buffer);
+    if (result != NULL)
+        free(result);
     // fprintf(stderr, "main1 of RD from %d\n", rank);
+    // printf("%d at FINALIZE\n", rank);
     MPI_Finalize();
     // fprintf(stderr, "main2 of RD from %d\n", rank);
     return 0;

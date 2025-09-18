@@ -13,9 +13,6 @@
 #include <mpi.h>
 #include <mpi-ext.h>
 
-#define CHUNK_SIZE 1000
-#define TIMEOUT 10
-
 /* Data struct that contain information useful for the ranks */
 typedef struct
 {
@@ -30,31 +27,8 @@ typedef struct
     int dead_partner;
 } Data;
 
-/* Data struct used for the thread args when running MPI_Barrier */
-typedef struct
-{
-    void *src;
-    void *dst;
-    int send_size;
-    MPI_Datatype datatype;
-    int partner;
-    MPI_Comm comm;
-    pthread_mutex_t *mutex;
-    pthread_cond_t *cond;
-    int *timed_out;
-} BarrierArgs;
-
 /* General implementation of recursive doubling allreduce with fault tolerance */
 void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm, MPI_Comm comm, Data *data, MPI_Datatype datatype, MPI_Op op);
-
-/* Standard implementation */
-void recursive_doubling_v1(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner);
-
-/* Implementation with partner check */
-void recursive_doubling_v2(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner, Data *data);
-
-/* Implementation that use Isend/Irecv instead of sendrecv */
-void recursive_doubling_v3(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner, int type_size, Data *data);
 
 /* Function that manage the events where one or more rank fail */
 void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int send_size, Data *data, MPI_Datatype datatype);
@@ -70,9 +44,6 @@ void check_abort(Data *data, int *ranks_gc, int nf, int distance, MPI_Comm pworl
 
 /* Check if a rank in ranks is also in ranks_gc */
 int is_failed(int *ranks_gc, int *ranks, int n, int m);
-
-/* MPI_Sendrecv with a timeout associated */
-void MPI_Sendrecv_timeout(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner);
 
 void log_failed(int *ranks, int nf);
 void log_struct(Data *data);

@@ -87,7 +87,7 @@ if parameters[7] == True or parameters[10] == False:
 
 
 # Write on the csv file
-filename = "../log.csv"
+filename = "../logs/log.csv"
 headers = ["N", "DELAY", "THRESHOLD", "BUF SIZE", "KILLED DOCKER", "REAL MPI KILLED", "TIME", "DEADLOCK", "SEGFAULT", "ABORT", "RIGHT RESULT", "D", "WR"]
 
 # If not exists create the file and write the headers

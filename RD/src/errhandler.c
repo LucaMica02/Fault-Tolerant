@@ -44,15 +44,6 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
     old_comm = *pworld;
     *pworld = new_world;
 
-    // log_failed(ranks_gc, nf);
-
-    /* Check if the dead partners are really dead to avoid wrong results */
-    if (data->dead_partner != -1 && !contains(ranks_gc, data->dead_partner, nf))
-    {
-        printf("WRONG\n");
-        MPI_Abort(*pworld, 75); // MPIX_ERR_PROC_FAILED
-    }
-
     inactive_nf = 0;
     /* Check if is failed an inactive rank */
     if (data->inactive_ranks_count > 0 && is_failed(ranks_gc, data->inactive_ranks, nf, data->inactive_ranks_count))
@@ -251,11 +242,13 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
     }
     if (wk_up == 1)
     {
-        err = MPI_Recv(src, send_size, datatype, MPI_ANY_SOURCE, 0, old_comm, MPI_STATUS_IGNORE);
+        MPI_Status status;
+        err = MPI_Recv(src, send_size, datatype, MPI_ANY_SOURCE, 0, old_comm, &status);
     }
     if (to_recv == 1)
     {
-        err = MPI_Recv(src, send_size, datatype, MPI_ANY_SOURCE, 0, *pcomm, MPI_STATUS_IGNORE);
+        MPI_Status status;
+        err = MPI_Recv(src, send_size, datatype, MPI_ANY_SOURCE, 0, *pcomm, &status);
     }
 
     /* Shift the ranks in active array */

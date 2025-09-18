@@ -61,7 +61,7 @@ static inline int copy_buffer(const void *input_buffer, void *output_buffer,
     return MPI_SUCCESS;
 }
 
-int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf, const void *tmp_buf, int *rindex, int *sindex, int *rcount, int *scount,
+int errhandler(MPI_Comm *comm, const void *sbuf, const void *rbuf, const void *tmp_buf, int *rindex, int *sindex, int *rcount, int *scount,
                int count, int steps, int *pwsize, int *pstep, int adjsize, int vrank, int nprocs_rem, int failed_step, int corr, ptrdiff_t extent, MPI_Datatype dtype, MPI_Op op)
 {
     int rank, size, err, nf, original_partner, step, wsize, vdead, dead;
@@ -93,12 +93,12 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
     MPI_Group_translate_ranks(group_f, nf, ranks_gf,
                               group_c, ranks_gc);
 
-    /*printf("Rank %d at step REDUCE-SCATTER %d notify: ", rank, failed_step);
+    printf("Rank %d at step %d notify: ", rank, failed_step);
     for (int i = 0; i < nf; i++)
     {
         printf("%d ", ranks_gc[i]);
     }
-    printf("DEAD\n");*/
+    printf("DEAD\n");
     if (nf > 1 || failed_step == 0)
         MPI_Abort(*comm, 1);
 
@@ -202,7 +202,7 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
 
             if (rank == dead && step != 0)
             {
-                //printf("%d recv from %d at step %d\n", rank, dest, step);
+                printf("%d recv from %d at step %d\n", rank, dest, step);
                 //printf("rank %d recv at step: %d; from: %d, rind: %ld, rc: %d\n", rank, step, dest, (ptrdiff_t)rindex[step], rcount[step]);
                 MPI_Recv((char *)tmp_buf + (ptrdiff_t)rindex[step] * extent, rcount[step], dtype, dest, 0, *comm, MPI_STATUS_IGNORE);
 
@@ -213,21 +213,21 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
 
                 if (step == failed_step)
                 {
-                    //printf("%d send to %d at step %d\n", rank, dest, step);
+                    printf("%d send to %d at step %d\n", rank, dest, step);
                     MPI_Send((char *)sbuf + (ptrdiff_t)sindex[step] * extent, scount[step], dtype, dest, 0, *comm);
                 }
-                //printf("%d step done\n", rank);
+                printf("%d step done\n", rank);
             }
             else if (dest == dead && step != 0)
             {
-                //printf("%d send at %d at step %d\n", rank, original_partner, step);
+                printf("%d send at %d at step %d\n", rank, original_partner, step);
                 //  printf("rank %d send at step: %d; sindx: %ld; sc: %d\n", rank, step, (ptrdiff_t)sindex[step], scount[step]);
                 MPI_Request req;
                 MPI_Isend((char *)rbuf + (ptrdiff_t)sindex[step] * extent, scount[step], dtype, original_partner, 0, *comm, &req);
                 MPI_Wait(&req, MPI_STATUS_IGNORE);
                 if (step == failed_step)
                 {
-                    //printf("%d send to %d at step %d\n", rank, dest, step);
+                    printf("%d send to %d at step %d\n", rank, dest, step);
                     MPI_Recv((char *)tmp_buf + (ptrdiff_t)rindex[step] * extent, rcount[step], dtype, original_partner, 0, *comm, MPI_STATUS_IGNORE);
                     if (corr)
                     {
@@ -237,7 +237,7 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
                                          rcount[step], dtype, op);
                     }
                 }
-                //printf("%d step done\n", rank);
+                printf("%d step done\n", rank);
             }
 
             /* Move the current window to the received message */
@@ -265,7 +265,7 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
             MPI_Abort(*comm, 1);
         if (rank == dead)
         {
-            //printf("%d final errhandler send to %d\n", rank, new_entry);
+            printf("%d final errhandler send to %d\n", rank, new_entry);
             // printf("from %d wsize: %d; step: %d\n", rank, wsize, step);
             MPI_Send(rindex, steps, MPI_INT, new_entry, 0, *comm);
             MPI_Send(sindex, steps, MPI_INT, new_entry, 0, *comm);
@@ -295,7 +295,7 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
         else if (rank == new_entry)
         {
             // printf("%d %d \n", rank, new_entry);
-            //printf("%d final errhandler recv from %d\n", rank, original_partner);
+            printf("%d final errhandler recv from %d\n", rank, original_partner);
             MPI_Recv(rindex, steps, MPI_INT, original_partner, 0, *comm, MPI_STATUS_IGNORE);
             MPI_Recv(sindex, steps, MPI_INT, original_partner, 0, *comm, MPI_STATUS_IGNORE);
             MPI_Recv(rcount, steps, MPI_INT, original_partner, 0, *comm, MPI_STATUS_IGNORE);
@@ -340,202 +340,8 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
     MPI_Group_incl(group_c, size - nf, group_ranks, &group_surv);
     MPI_Comm_create(nc, group_surv, &new_comm);
     *comm = new_comm;
-    //printf("%d STO ALLA FINE\n", rank);
-    MPI_Comm_set_errhandler(*comm, // tolerate the failure again
-                            MPI_ERRORS_RETURN);
-    MPI_Barrier(*comm);
-    return 0;
-}
+    printf("%d STO ALLA FINE\n", rank);
 
-int errhandler_allgather(MPI_Comm *comm, const void *rbuf, int *rindex, int *sindex, int *rcount, int *scount,
-               int count, int steps, int adjsize, int nprocs_rem, int failed_step, ptrdiff_t extent, MPI_Datatype dtype)
-{
-    int rank, size, err, nf, original_partner, vdead, dead;
-    int *ranks_gc, *ranks_gf, *group_ranks;
-    MPI_Group group_f, group_c, group_surv;
-    MPI_Comm new_comm;
-
-    MPIX_Comm_agree(*comm, &err);  // synchronization
-    MPI_Comm_set_errhandler(*comm, // don't allow fault tolerance here
-                            MPI_ERRORS_ARE_FATAL);
-
-    MPI_Comm_rank(*comm, &rank);
-    MPI_Comm_size(*comm, &size);
-    //printf("Rank %d in errhandler ALLGATHER at step %d\n", rank, failed_step);
-
-    /* Check which ranks are failed */
-    MPIX_Comm_failure_ack(*comm);
-    MPIX_Comm_failure_get_acked(*comm, &group_f);
-    MPI_Group_size(group_f, &nf);
-
-    /* Get the failed ranks */
-    ranks_gf = (int *)malloc(nf * sizeof(int));
-    ranks_gc = (int *)malloc(nf * sizeof(int));
-    MPI_Comm_group(*comm, &group_c);
-    for (int i = 0; i < nf; i++)
-        ranks_gf[i] = i;
-    MPI_Group_translate_ranks(group_f, nf, ranks_gf,
-                              group_c, ranks_gc);
-
-    /*
-     * We support maximum one failure
-     * We can't support failure in the first step
-     * Since the steps go in reverse the first step in the allgather
-     * will be steps-1, but the errhandler is called at the end of the step
-     * when step-- is called, so we do the check with (steps - 1)
-     */
-    if (nf > 1 || failed_step == (steps - 1))
-    {
-        // printf("from %d nf %d fs %d steps %d\n", rank, nf, failed_step, steps);
-        MPI_Abort(*comm, 1);
-    }
-
-    /*printf("Rank %d notify: ", rank);
-    for (int i = 0; i < nf; i++)
-    {
-        printf("%d ", ranks_gc[i]);
-    }
-    printf("DEAD\n");*/
-
-    /* ################################################################ */
-    dead = ranks_gc[0];
-
-    // edge case: rank idle die
-    int rank_idle_die = (dead < nprocs_rem * 2 && dead % 2 == 1) ? 1 : 0;
-    if (rank_idle_die)
-    {
-        int last_rank_idle = nprocs_rem * 2 - 1;
-        group_ranks = (int *)malloc((size - nf) * sizeof(int));
-        int k = 0;
-        for (int i = 0; i < size; i++)
-        {
-            if (i != last_rank_idle)
-            {
-                group_ranks[k++] = i;
-            }
-        }
-        if (last_rank_idle != dead)
-        {
-            group_ranks[dead] = last_rank_idle;
-        }
-
-        /*printf("GR %d: [", rank);
-        for (int i = 0; i < size - nf; i++)
-        {
-            printf("%d", ((int *)group_ranks)[i]);
-            if (i == size - nf - 1)
-                printf("]\n");
-            else
-                printf(", ");
-        }*/
-    }
-    else
-    {
-        if (dead < nprocs_rem * 2)
-        {
-            if (dead % 2 == 0)
-                vdead = dead / 2;
-            // else was idle
-        }
-        else
-        {
-            vdead = dead - nprocs_rem;
-        }
-
-        int v_org_partner = vdead ^ (adjsize >> 1);
-        original_partner = (v_org_partner < nprocs_rem) ? v_org_partner * 2 : v_org_partner + nprocs_rem;
-        int new_entry = (nprocs_rem * 2) - 1;
-
-        // no rank idle available
-        if (new_entry == -1)
-            MPI_Abort(*comm, 1);
-
-        // send data to new entry
-        if (rank == original_partner)
-        {
-            // send the buffer and the offsets
-            MPI_Send(rbuf, count, dtype, new_entry, 0, *comm);
-            MPI_Send(rindex, steps, MPI_INT, new_entry, 0, *comm);
-            MPI_Send(sindex, steps, MPI_INT, new_entry, 0, *comm);
-            MPI_Send(rcount, steps, MPI_INT, new_entry, 0, *comm);
-            MPI_Send(scount, steps, MPI_INT, new_entry, 0, *comm);
-        }
-        else if (rank == new_entry)
-        {
-            // recv the buffer and the offsets
-            MPI_Recv(rbuf, count, dtype, original_partner, 0, *comm, MPI_STATUS_IGNORE);
-            MPI_Recv(rindex, steps, MPI_INT, original_partner, 0, *comm, MPI_STATUS_IGNORE);
-            MPI_Recv(sindex, steps, MPI_INT, original_partner, 0, *comm, MPI_STATUS_IGNORE);
-            MPI_Recv(rcount, steps, MPI_INT, original_partner, 0, *comm, MPI_STATUS_IGNORE);
-            MPI_Recv(scount, steps, MPI_INT, original_partner, 0, *comm, MPI_STATUS_IGNORE);
-        }
-
-        // recovery of corr data if necessary
-        int v_last_partner = vdead ^ (1 << failed_step);
-        int last_partner = (v_last_partner < nprocs_rem) ? v_last_partner * 2 : v_last_partner + nprocs_rem;
-        if (rank == new_entry)
-        {
-            // send the data
-            MPI_Send((char *)rbuf + (ptrdiff_t)rindex[failed_step] * extent,
-                     rcount[failed_step], dtype, last_partner, 0, *comm);
-        }
-        else if (rank == last_partner)
-        {
-            // recv data
-            MPI_Recv((char *)rbuf + (ptrdiff_t)sindex[failed_step] * extent,
-                     scount[failed_step], dtype, new_entry, 0, *comm, MPI_STATUS_IGNORE);
-        }
-
-        group_ranks = (int *)malloc((size - nf) * sizeof(int));
-        int k = 0;
-        for (int i = 0; i < size; i++)
-        {
-            if (i != new_entry)
-            {
-                group_ranks[k++] = i;
-            }
-        }
-        if (dead < new_entry)
-        {
-            group_ranks[dead] = new_entry;
-        }
-        else
-        {
-            group_ranks[dead - 1] = new_entry;
-        }
-
-        /*printf("GR %d: [", rank);
-        for (int i = 0; i < size - nf; i++)
-        {
-            printf("%d", ((int *)group_ranks)[i]);
-            if (i == size - nf - 1)
-                printf("]\n");
-            else
-                printf(", ");
-        }*/
-    }
-    MPI_Comm nc;
-    MPIX_Comm_shrink(*comm, &nc);
-    MPI_Comm_group(*comm, &group_c);
-    MPI_Group_incl(group_c, size - nf, group_ranks, &group_surv);
-    MPI_Comm_create(nc, group_surv, &new_comm);
-    *comm = new_comm;
-    // printf("%d STO ALLA FINE\n", rank);
-
-    MPI_Group_free(&group_surv);
-    MPI_Group_free(&group_c);
-    MPI_Group_free(&group_f);
-    if (ranks_gc != NULL)
-        free(ranks_gc);
-    if (ranks_gf != NULL)
-        free(ranks_gf);
-    if (group_ranks != NULL)
-        free(group_ranks);
-    MPI_Comm_free(&nc);
-
-    MPI_Comm_set_errhandler(*comm, // tolerate the failure again
-                            MPI_ERRORS_RETURN);
-    MPI_Barrier(*comm);
     return 0;
 }
 
@@ -752,7 +558,7 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
             if (step == 0)
             {
                 /* Send the whole buffer */
-                //printf("%d sendrecv with %d at %d\n", rank, dest, step);
+                printf("%d sendrecv with %d at %d\n", rank, dest, step);
                 MPI_Request req;
                 MPI_Isend(rbuf, count, dtype, dest, 0, *comm, &req);
                 err = MPI_Recv(tmp_buf, count, dtype, dest, 0, *comm, MPI_STATUS_IGNORE);
@@ -766,7 +572,7 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
             }
             else
             {
-                //printf("%d sendrecv with %d at %d\n", rank, dest, step);
+                printf("%d sendrecv with %d at %d\n", rank, dest, step);
                 MPI_Request req;
                 MPI_Isend((char *)rbuf + (ptrdiff_t)sindex[step] * extent,
                       scount[step], dtype, dest, 0, *comm, &req);
@@ -802,7 +608,7 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
         
         // printf("Wee %d %d\n", rank, step);
         // printf("BEF: rank %d, vrank %d at step %d mask: %d\n", rank, vrank, step, mask);
-        //printf("%d at Barrier at step %d\n", rank, step);
+        printf("%d at Barrier at step %d\n", rank, step);
         int flag = 1;
         MPIX_Comm_agree(*comm, &flag); // synchronization
         err = MPI_Barrier(*comm); // detect failure at the previous step
@@ -812,7 +618,7 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
             if (err != 75)
                 MPI_Abort(*comm, 1);
             // printf("%d is here at %d\n", rank, step);
-            errhandler_reduce_scatter(comm, sbuf, rbuf, tmp_buf, rindex, sindex, rcount, scount, count, steps, &wsize, &step, adjsize, vrank, nprocs_rem, step, corr, extent, dtype, op);
+            errhandler(comm, sbuf, rbuf, tmp_buf, rindex, sindex, rcount, scount, count, steps, &wsize, &step, adjsize, vrank, nprocs_rem, step, corr, extent, dtype, op);
             //   calcutate again rank and vrank
             nprocs_rem--;
             MPI_Comm_rank(*comm, &rank);
@@ -832,6 +638,11 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
         step++;
     }
 
+    MPI_Comm_set_errhandler(*comm, // don't tolerate failure anymore
+                            MPI_ERRORS_ARE_FATAL);
+    MPI_Barrier(*comm);
+    //printf("%d did the reduce-scatter\n", rank);
+
     /*
      * Assertion: each process has 1 / p' of the total reduction result:
      * rcount[nsteps - 1] elements in the rbuf[rindex[nsteps - 1], ...].
@@ -847,64 +658,29 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
 
     step = steps - 1;
 
-    for (int mask = adjsize >> 1; mask > 0; mask >>= 1)
+    if (vrank != -1)
     {
-        if (vrank != -1)
+        for (int mask = adjsize >> 1; mask > 0; mask >>= 1)
         {
             int vdest = vrank ^ mask;
             /* Translate vdest virtual rank to real rank */
             int dest = (vdest < nprocs_rem) ? vdest * 2 : vdest + nprocs_rem;
-            // if (rank == 4 && step == 0)
-            //   raise(SIGKILL);
+            // printf("allgather at step %d, rank %d, sending to %d %d\n", step, rank, vdest, dest);
+
             /*
              * Send rcount[step] elements from rbuf[rindex[step]...]
              * Recv scount[step] elements to rbuf[sindex[step]...]
              */
-            //printf("rank %d send/recv with %d at step %d sc %d rc %d\n", rank, dest, step, rcount[step], scount[step]);
+            printf("%d send/recv allgather with %d at step %d\n", rank, dest, step);
             MPI_Request req;
             MPI_Isend((char *)rbuf + (ptrdiff_t)rindex[step] * extent,
                       rcount[step], dtype, dest, 0, *comm, &req);
             MPI_Recv((char *)rbuf + (ptrdiff_t)sindex[step] * extent,
                      scount[step], dtype, dest, 0, *comm, MPI_STATUS_IGNORE);
             MPI_Wait(&req, MPI_STATUS_IGNORE);
-            /*MPI_Sendrecv((char *)rbuf + (ptrdiff_t)rindex[step] * extent,
-                         rcount[step], dtype, dest, 0,
-                         (char *)rbuf + (ptrdiff_t)sindex[step] * extent,
-                         scount[step], dtype, dest, 0, comm, MPI_STATUS_IGNORE);*/
-            /*MPI_Sendrecv_timeout((char *)rbuf + (ptrdiff_t)rindex[step] * extent,
-                                 (char *)rbuf + (ptrdiff_t)sindex[step] * extent,
-                                 rcount[step], scount[step], comm, dtype, dest);*/
+            step--;
         }
-
-        //printf("%d at Barrier at step %d\n", rank, step);
-        int flag = 1;
-        MPIX_Comm_agree(*comm, &flag);
-        err = MPI_Barrier(*comm);
-        if (err != MPI_SUCCESS)
-        {
-            if (err != 75)
-                MPI_Abort(*comm, 1);
-            errhandler_allgather(comm, rbuf, rindex, sindex, rcount, scount, count, steps, adjsize, nprocs_rem, step, extent, dtype);
-            nprocs_rem--;
-            MPI_Comm_rank(*comm, &rank);
-            if (rank < nprocs_rem * 2)
-            {
-                if (rank % 2 == 0)
-                    vrank = rank / 2;
-                else
-                    vrank = -1;
-            }
-            else
-            {
-                vrank = rank - nprocs_rem;
-            }
-        }
-        step--;
     }
-
-    MPI_Comm_set_errhandler(*comm, // don't tolerate failure anymore
-                            MPI_ERRORS_ARE_FATAL);
-    MPI_Barrier(*comm);
 
     /*
      * Step 4. Send total result to excluded odd ranks.
@@ -914,21 +690,21 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
     {
         if (rank % 2 != 0)
         {
-            //printf("%d at the end receiving from %d\n", rank, rank - 1);
+            printf("%d at the end receiving from %d\n", rank, rank - 1);
             /* Odd process -- recv result from rank - 1 */
             MPI_Recv(rbuf, count, dtype, rank - 1,
                            0, *comm, MPI_STATUS_IGNORE);
         }
         else
         {
-            //printf("%d at the end sending to %d\n", rank, rank + 1);
+            printf("%d at the end sending to %d\n", rank, rank + 1);
             /* Even process -- send result to rank + 1 */
             MPI_Request req;
             MPI_Isend(rbuf, count, dtype, rank + 1, 0, *comm, &req);
             MPI_Wait(&req, MPI_STATUS_IGNORE);
         }
     }
-    //printf("From %d done!\n", rank);
+    printf("From %d done!\n", rank);
     //MPI_Barrier(*comm);
 
 cleanup_and_return:
@@ -984,7 +760,7 @@ int test1(int buf_size, int rank, int size, MPI_Comm *comm)
     return 0;
 }
 
-/*int test2(int buf_size, int rank, int size)
+int test2(int buf_size, int rank, int size)
 {
     int res;
     int *buffer;
@@ -1010,11 +786,11 @@ int test1(int buf_size, int rank, int size, MPI_Comm *comm)
     if (NULL != result)
         free(result);
     return 0;
-}*/
+}
 
 int main(int argc, char *argv[])
 {
-    int buf_size, rank, size;
+    int buf_size, rank, size, flag;
     MPI_Comm comm;
     /*MPI_Init_thread(&a
     rgc, &argv, MPI_THREAD_SERIALIZED, &flag);
@@ -1038,7 +814,7 @@ int main(int argc, char *argv[])
     MPI_Comm_dup(MPI_COMM_WORLD, &comm);
     test1(buf_size, rank, size, &comm);
 
-    //flag = 1;
+    flag = 1;
     //MPIX_Comm_agree(comm, &flag);
     //MPI_Barrier(comm);
 

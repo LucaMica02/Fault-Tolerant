@@ -1,58 +1,5 @@
 #include "header.h"
 
-void *send_recv_thread(void *arg)
-{
-    /* A thread run the MPI_Sendrecv */
-    BarrierArgs *args = (BarrierArgs *)arg;
-    MPI_Sendrecv(args->src, args->send_size, args->datatype, args->partner, 0,
-                 args->dst, args->send_size, args->datatype, args->partner, 0,
-                 args->comm, MPI_STATUS_IGNORE);
-
-    /* Set the flag timed_out to false and wake up the main thread */
-    pthread_mutex_lock(args->mutex);
-    *(args->timed_out) = 0;
-    pthread_cond_signal(args->cond);
-    pthread_mutex_unlock(args->mutex);
-
-    return NULL;
-}
-
-/* MPI_Sendrecv with a timeout associated */
-void MPI_Sendrecv_timeout(void *src, void *dst, int send_size, MPI_Comm comm, MPI_Datatype datatype, int partner)
-{
-    pthread_t tid;
-    pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-    pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-    int timed_out = 1;
-
-    /* Create the thread */
-    BarrierArgs args = {src, dst, send_size, datatype, partner, comm, &mutex, &cond, &timed_out};
-    pthread_create(&tid, NULL, send_recv_thread, &args);
-
-    /* Set the timeout */
-    struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
-    ts.tv_sec += TIMEOUT;
-
-    pthread_mutex_lock(&mutex);
-    while (timed_out)
-    {
-        int rc = pthread_cond_timedwait(&cond, &mutex, &ts);
-        if (rc == ETIMEDOUT)
-        {
-            /* If the timeout is reached abort the whole comm because a deadlock is detected */
-            printf("DEADLOCK\n");
-            pthread_mutex_unlock(&mutex);
-            MPI_Abort(comm, 16); // MPI_ERR_OTHER
-        }
-    }
-
-    pthread_mutex_unlock(&mutex);
-    pthread_join(tid, NULL);
-    pthread_mutex_destroy(&mutex);
-    pthread_cond_destroy(&cond);
-}
-
 void reduce_pow2(void *src, void *dst, int send_size, MPI_Comm world_comm, Data *data, MPI_Datatype datatype, MPI_Op op)
 {
     int p = (int)pow(2, floor(log2(data->original_size))); // closest lower power of two

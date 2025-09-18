@@ -9,19 +9,13 @@ min=1
 max=100
 
 # Get the container ID of the running MPI job
-CONTAINER_ID=$(docker ps --filter "ancestor=abouteiller/mpi-ft-ulfm" --format "{{.ID}}")
+CONTAINER_ID=($(docker ps --filter "ancestor=abouteiller/mpi-ft-ulfm" --format "{{.ID}}"))
+echo $CONTAINER_ID
 
 # Find all PIDs of the process "main" inside the container
-PIDS=($(docker exec -it $CONTAINER_ID ps aux | awk '/main/ {print $1}'))
+PIDS=($(docker exec "$CONTAINER_ID" pgrep main))
+echo "Collected PIDs: ${PIDS[@]}"
 
-# Iterate throught the PIDS
-for PID in "${PIDS[@]}";  do 
-    random_value=$((RANDOM % (max - min + 1) + min))
-    #echo $PID
-    if [ $random_value -lt $THRESHOLD ]; then
-    #if [ "$PID" -eq 14 ] || [ "$PID" -eq 17 ] || [ "$PID" -eq 23 ]; then
-        echo killing.. $PID
-        docker exec -it "$CONTAINER_ID" kill -9 $PID
-        sleep 0.5
-    fi
-done
+RANDOM_PID=${PIDS[$RANDOM % ${#PIDS[@]}]}
+echo "Killing PID $RANDOM_PID inside container $CONTAINER_ID"
+docker exec "$CONTAINER_ID" kill -9 "$RANDOM_PID"

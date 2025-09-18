@@ -1,7 +1,7 @@
 #!/bin/bash
 
-N=$((RANDOM % (16 - 4 + 1) + 4)) # 4 - 16
-DELAY=$((RANDOM % (4 - 2 + 1)+ 2)) # 2 - 4
+N=$((RANDOM % (32 - 4 + 1) + 4)) # 4 - 32
+DELAY=$((RANDOM % (3 - 2 + 1)+ 2)) # 2 - 4
 THRESHOLD=$(python3 ../scripts/get_threshold.py $N)
 read MIN MAX <<< $(python3 ../scripts/get_bs.py $N)
 BUF_SIZE=$((RANDOM % (MAX - MIN + 1) + MIN))
