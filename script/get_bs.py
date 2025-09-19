@@ -1,6 +1,6 @@
 import sys
 
-def get_bs(N):
+def get_buffer_size(N):
     k = (N + 6)
     if N >= 16 and N <= 64:
         k -= 5
@@ -10,5 +10,5 @@ def get_bs(N):
     return (int(medium * 0.85), int(medium * 1.15))
 
 N = int(sys.argv[1])
-min_bs, max_bs = get_bs(N)
+min_bs, max_bs = get_buffer_size(N)
 print(min_bs, max_bs)

@@ -1,4 +1,20 @@
-import os, csv
+import os, csv, sys
+
+def append_with_separator(algo, input_file1, input_file2, input_file3, text, output_file):
+    # Create the output file if it doesn't exist
+    if not os.path.exists(output_file):
+        open(output_file, 'w').close()
+
+    # Read from input and append to output
+    with open(input_file1, 'r') as inp1, open(input_file2, 'r') as inp2, open(input_file3, 'r') as inp3, open(output_file, 'a') as out:
+        out.write(f"Algo Used: {algo}\n")
+        out.write(inp1.read())
+        out.write('\n')
+        out.write(inp2.read())
+        out.write('\n')
+        out.write(inp3.read())
+        out.write('\n' + text)
+        out.write('\n' + "######################################################################")
 
 # take the parameters from test_log  
 def getParameters():
@@ -21,8 +37,6 @@ def getParameters():
                 BUF_SIZE = int(line[-1])
             elif line[0] == "DELAY":
                 DELAY = int(line[-1])
-            elif line[0] == "THRESHOLD":
-                THRESHOLD = int(line[-1])
             elif line[0] == "TIMEOUT":
                 TIMEOUT = int(line[-1])
             elif line[0] == "real":
@@ -30,11 +44,10 @@ def getParameters():
             elif line[0] == "MPI_ABORT" or "MPI_ERRORS_ARE_FATAL" in line:
                 ABORT = True
     result = calcExpectedRes(N-1, BUF_SIZE)
-    expectedKill = countKill()
-    realKill, RIGHT_RESULT, D, WR = mpiOutput(N, result)
+    KILLED, RIGHT_RESULT = mpiOutput(N, result)
     if TIME > TIMEOUT:
         DEADLOCK = True
-    return [N, DELAY, THRESHOLD, BUF_SIZE, expectedKill, len(realKill), TIME, DEADLOCK, SEGFAULT, ABORT, RIGHT_RESULT, D, WR]
+    return [N, DELAY, BUF_SIZE, KILLED, TIME, DEADLOCK, SEGFAULT, ABORT, RIGHT_RESULT]
 
 # Calculate the expected result 
 def calcExpectedRes(N, BUF_SIZE):
@@ -44,18 +57,9 @@ def calcExpectedRes(N, BUF_SIZE):
     print(result, int(result))
     return int(result)
 
-# Read the expected kill from docker_out
-def countKill():
-    killed = []
-    with open("../out/docker_out.txt", "r") as file:
-        lines = file.readlines()
-    return len(lines)
-
 # Read all the results from mpi_out
 def mpiOutput(N, result):
     RIGHT_RESULT = True
-    D = False
-    WRONG = False
     killed = []
     survivors = set()
     with open("../out/mpi_out.txt", "r") as file:
@@ -66,29 +70,22 @@ def mpiOutput(N, result):
             survivors.add(int(line[2]))
             if int(line[-1]) != result:
                 RIGHT_RESULT = False
-        elif line[0] == "DEADLOCK":
-            D = True
-        elif line[0] == "WRONG":
-            WRONG = True
     for i in range(N):
         if i not in survivors:
             killed.append(i)
-    return killed, RIGHT_RESULT, D, WRONG
+    return len(killed), RIGHT_RESULT
 
+all_reduce_type = sys.argv[1]
+log_file = sys.argv[2]
 parameters = getParameters()
 print(parameters)
-if parameters[7] == True or parameters[10] == False:
-    with open("../out/mpi_out.txt", "r") as file:
-        print(file.read())
-    with open("../out/test_log.txt", "r") as file:
-        print(file.read())
-    with open("../out/docker_out.txt", "r") as file:
-        print(file.read())
-
+if parameters[5] == True or parameters[8] == False:
+    append_with_separator(all_reduce_type, "../out/mpi_out.txt", "../out/docker_out.txt", "../out/test_log.txt", str([N, DELAY, BUF_SIZE, TIMEOUT, TIME, DEADLOCK, DEADLOCK_DET, SEGFAULT, ABORT, RIGHT_RESULT, MPI_KILLED]), "../out/log_errors.txt")
+    print("########################### ERROR ###########################")
 
 # Write on the csv file
-filename = "../logs/log.csv"
-headers = ["N", "DELAY", "THRESHOLD", "BUF SIZE", "KILLED DOCKER", "REAL MPI KILLED", "TIME", "DEADLOCK", "SEGFAULT", "ABORT", "RIGHT RESULT", "D", "WR"]
+filename = log_file
+headers = ["N", "DELAY", "BUF SIZE", "KILLED", "TIME", "DEADLOCK", "SEGFAULT", "ABORT", "RIGHT RESULT"]
 
 # If not exists create the file and write the headers
 if not os.path.exists(filename):

@@ -290,13 +290,10 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
         }
     }
 
-    // log_struct(data);
-
     if (to_send_size > 0)
         free(to_send);
     if (to_wk_up_size > 0)
         free(to_wk_up);
-    // MPIX_Comm_revoke(old_comm);
     MPI_Group_free(&group_survivors);
     MPI_Group_free(&group_c);
     MPI_Group_free(&group_f);

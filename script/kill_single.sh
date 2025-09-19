@@ -1,7 +1,6 @@
 #!/bin/bash
 
 DELAY=$1
-THRESHOLD=$2
 
 sleep $DELAY
 

@@ -28,7 +28,6 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
         /* Exchange the data between ranks */
         if (partner < size && data->active != 0)
         {
-            /* Choose the recursive doubling version to test */
             MPI_Request req;
             MPI_Isend(src, send_size, datatype, partner, 0, comm, &req);
             MPI_Recv(dst, send_size, datatype, partner, 0, comm, MPI_STATUS_IGNORE);

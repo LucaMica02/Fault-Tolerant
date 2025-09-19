@@ -98,29 +98,3 @@ int is_failed(int *ranks_gc, int *ranks, int n, int m)
     }
     return 0;
 }
-
-/* ################## LOGS FOR DEBUG PURPOSE ################## */
-void log_failed(int *ranks, int nf)
-{
-    printf("DEAD: ");
-    for (int i = 0; i < nf; i++)
-    {
-        printf("%d ", ranks[i]);
-    }
-    puts("");
-}
-
-void log_struct(Data *data)
-{
-    printf("ACTIVE: ");
-    for (int i = 0; i < data->active_ranks_count; i++)
-    {
-        printf("%d ", data->active_ranks[i]);
-    }
-    printf("\nINACTIVE: ");
-    for (int i = 0; i < data->inactive_ranks_count; i++)
-    {
-        printf("%d ", data->inactive_ranks[i]);
-    }
-    puts("");
-}

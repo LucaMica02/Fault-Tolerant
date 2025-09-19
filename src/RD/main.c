@@ -39,7 +39,6 @@ int main(int argc, char *argv[])
     }
 
     recursive_doubling(buffer, result, buf_size, MPI_COMM_WORLD, MPI_COMM_WORLD, data, MPI_INT, MPI_SUM);
-    // printf("Hello from %d b_size: %d\n", data->original_rank, buf_size);
     end = clock();
     difftime = ((double)(end - start)) / CLOCKS_PER_SEC;
 
@@ -48,8 +47,7 @@ int main(int argc, char *argv[])
     {
         res += (result[i] % 17);
     }
-    //if (rank == 0)
-      //  printf("Time: %lf\n", difftime);
+
     printf("Hello from %d of %d and the result is: %d\n", data->original_rank, data->original_size, res);
     if (data->inactive_ranks != NULL)
         free(data->inactive_ranks);
@@ -61,9 +59,6 @@ int main(int argc, char *argv[])
         free(buffer);
     if (result != NULL)
         free(result);
-    // fprintf(stderr, "main1 of RD from %d\n", rank);
-    // printf("%d at FINALIZE\n", rank);
     MPI_Finalize();
-    // fprintf(stderr, "main2 of RD from %d\n", rank);
     return 0;
 }
