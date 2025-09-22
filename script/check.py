@@ -80,7 +80,7 @@ log_file = sys.argv[2]
 parameters = getParameters()
 print(parameters)
 if parameters[5] == True or parameters[8] == False:
-    append_with_separator(all_reduce_type, "../out/mpi_out.txt", "../out/docker_out.txt", "../out/test_log.txt", str([N, DELAY, BUF_SIZE, TIMEOUT, TIME, DEADLOCK, DEADLOCK_DET, SEGFAULT, ABORT, RIGHT_RESULT, MPI_KILLED]), "../out/log_errors.txt")
+    append_with_separator(all_reduce_type, "../out/mpi_out.txt", "../out/docker_out.txt", "../out/test_log.txt", str(parameters), "../out/log_errors.txt")
     print("########################### ERROR ###########################")
 
 # Write on the csv file

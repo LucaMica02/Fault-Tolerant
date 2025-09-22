@@ -5,30 +5,19 @@ N=$2       # Number of processes to kill
 
 sleep $DELAY
 
-# Get the container ID of the running MPI job
-CONTAINER_ID=$(docker ps --filter "ancestor=abouteiller/mpi-ft-ulfm" --format "{{.ID}}")
-echo "Target container: $CONTAINER_ID"
-
-# Find all PIDs of the process "main" inside the container
-PIDS=($(docker exec "$CONTAINER_ID" pgrep main))
-echo "Collected PIDs: ${PIDS[@]}"
-
-# Kill N random processes, one at a time
 for ((i=0; i<N; i++)); do
-  if [ "${#PIDS[@]}" -eq 0 ]; then
-    echo "No more PIDs to kill."
-    break
-  fi
+    PIDS=($(pgrep -u $USER main))
 
-  RANDOM_INDEX=$((RANDOM % ${#PIDS[@]}))
-  RANDOM_PID=${PIDS[$RANDOM_INDEX]}
+    if [ "${#PIDS[@]}" -eq 0 ]; then
+        echo "No more PIDs to kill. Exiting."
+        exit 0
+    fi
 
-  echo "[$((i+1))/$N] Killing PID $RANDOM_PID inside container $CONTAINER_ID"
-  docker exec "$CONTAINER_ID" kill -9 "$RANDOM_PID"
+    RANDOM_INDEX=$((RANDOM % ${#PIDS[@]}))
+    RANDOM_PID=${PIDS[$RANDOM_INDEX]}
 
-  # Remove killed PID from the list
-  PIDS=("${PIDS[@]:0:$RANDOM_INDEX}" "${PIDS[@]:$((RANDOM_INDEX+1))}")
+    echo "[$((i+1))/$N] Killing PID $RANDOM_PID"
+    kill -9 "$RANDOM_PID"
 
-  # Sleep 0.5s before next kill
-  sleep 0.5
+    sleep 0.5
 done

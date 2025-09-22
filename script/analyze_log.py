@@ -117,8 +117,8 @@ def plotLog(filename, title):
 
 plotLog('../log/log_single_RD.csv', "RD single kill")
 print("################################################")
-plotLog('../log/log_multi_RD.csv', "RD multiple kill")
+plotLog('../log/log_multiple_RD.csv', "RD multiple kill")
 print("################################################")
 plotLog('../log/log_single_Raben.csv', "Raben single kill")
 print("################################################")
-plotLog('../log/log_multi_Raben.csv', "Raben multiple kill")
+plotLog('../log/log_multiple_Raben.csv', "Raben multiple kill")

@@ -65,8 +65,13 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
         }
     }
 
+    MPI_Errhandler errh;
+    MPI_Comm_create_errhandler(fatal_errhandler, &errh);
+    MPI_Comm_set_errhandler(MPI_COMM_WORLD, errh);
+    MPI_Barrier(MPI_COMM_WORLD);
+
     MPI_Comm_set_errhandler(world_comm, // no more tolerating failure
-                            MPI_ERRORS_ARE_FATAL);
+                    MPI_ERRORS_ARE_FATAL);
     MPI_Barrier(world_comm);
 
     /* Active ranks send back result to inactive ones */
@@ -84,4 +89,6 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
             MPI_Send(dst, send_size, datatype, data->inactive_ranks[rank], 0, world_comm);
         }
     }
+
+    MPI_Barrier(world_comm);
 }
