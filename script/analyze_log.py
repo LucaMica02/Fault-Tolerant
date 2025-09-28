@@ -1,6 +1,6 @@
 import csv
-import matplotlib.pyplot as plt
-import numpy as np
+#import matplotlib.pyplot as plt
+#import numpy as np
 
 # TODO: Gestire segfault
 
@@ -59,11 +59,10 @@ def plotLog(filename, title):
     ok_abort_perc = (ok_abort / useful_rows) * 100
 
     N_avg = round((sum(N) / len(N)), 2)
-    N_stdd = round(np.std(N, ddof=1), 2)
+   # N_stdd = round(np.std(N, ddof=1), 2)
     KILLED_avg = round((sum(KILLED) / len(KILLED)), 2)
-    KILLED_stdd = round(np.std(KILLED, ddof=1), 2)
+   # KILLED_stdd = round(np.std(KILLED, ddof=1), 2)
 
-    #"""
     print("DEADLOCK: %", deadlock_perc)
     print("WRONG RESULT: %", wrongResult_perc)
     print("ABORT: %", abort_perc)
@@ -73,10 +72,10 @@ def plotLog(filename, title):
     print("Useful Rows:", useful_rows)
     print("N AVG", N_avg)
     print("KILLED AVG", KILLED_avg)
-    print("N STDD", N_stdd)
-    print("KILLED STDD", KILLED_stdd)
-   #"""
+    #print("N STDD", N_stdd)
+    #print("KILLED STDD", KILLED_stdd)
 
+""" 
     # Data to plot
     labels = ["Deadlock", "Wrong Result", "Abort", "OK", "OK Abort"]
     sizes = [deadlock_perc, wrongResult_perc, abort_perc, ok_perc, ok_abort_perc]
@@ -114,6 +113,7 @@ def plotLog(filename, title):
     # Show it
     plt.title(title)
     plt.show()
+"""
 
 plotLog('../log/log_single_RD.csv', "RD single kill")
 print("################################################")

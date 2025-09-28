@@ -3,9 +3,11 @@
 #SBATCH --output=ulfm_%j.out
 #SBATCH --error=ulfm_%j.err
 #SBATCH --time=00:05:00
-#SBATCH --nodes=1               # number of nodes
+#SBATCH --nodes=2               # number of nodes
 #SBATCH --ntasks-per-node=4     # MPI ranks per node
-#SBATCH --partition=students
+#SBATCH --partition=dcgp_usr_prod
+#SBATCH --account=IscrC_ASCEND_0
 
-# Launch MPI program using srun
-bash run.sh
+NTASKS=$(( SLURM_NNODES * SLURM_NTASKS_PER_NODE ))
+
+srun -n $NTASKS singularity exec -B $HOME/local -B $TMPDIR:$TMPDIR $HOME/local/mpi-ft-ulfm.sif ./ulfm.exe

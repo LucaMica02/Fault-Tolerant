@@ -5,8 +5,9 @@
 #SBATCH --error=RD_%j.err
 #SBATCH --time=00:30:00
 #SBATCH --nodes=1               # number of nodes
-#SBATCH --ntasks-per-node=8    # MPI ranks per node (Ask the max value for N)
-#SBATCH --partition=students
+#SBATCH --ntasks-per-node=32    # MPI ranks per node (Ask the max value for N)
+#SBATCH --partition=dcgp_usr_prod
+#SBATCH --account=IscrC_ASCEND_0
 
 mkdir -p ../out
 
@@ -18,7 +19,7 @@ run_experiments() {
     local log_file=$5
 
     for run in $(seq 1 "$runs"); do
-        N=$((RANDOM % (8 - 4 + 1) + 4))     
+        N=$((RANDOM % (32 - 4 + 1) + 4))     
         DELAY=$((RANDOM % (3 - 2 + 1) + 2))
         read MIN MAX <<< $(python3 get_bs.py "$N")
         BUF_SIZE=$((RANDOM % (MAX - MIN + 1) + MIN))
