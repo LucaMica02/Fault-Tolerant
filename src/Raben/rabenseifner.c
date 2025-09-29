@@ -416,6 +416,7 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+
     if (argc < 2)
     {
         printf("Error: buffer size expected\n");
