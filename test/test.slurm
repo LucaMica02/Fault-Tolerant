@@ -23,21 +23,25 @@ run_tests() {
     python3 check.py
 }
 
-np=4
-max_np=64
+repeats=5
 
-while [ "$np" -le "$max_np" ]; do
-    # Inner loop: buf_size
-    buf_size=1
-    max_buf=33554432
+for rep in $(seq 1 $repeats); do
+    echo $rep
 
-    while [ "$buf_size" -le "$max_buf" ]; do
-        run_tests "$np" "$buf_size"
+    np=4
+    max_np=64
 
-        # Double buf_size
-        buf_size=$((buf_size * 2))
+    while [ "$np" -le "$max_np" ]; do
+        buf_size=1
+        max_buf=33554432
+
+        while [ "$buf_size" -le "$max_buf" ]; do
+            run_tests "$np" "$buf_size"
+
+            buf_size=$((buf_size * 2))
+        done
+
+        np=$((np * 2))
     done
 
-    # Double np
-    np=$((np * 2))
 done
