@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
 
     start = clock();
     MPI_Allreduce(buffer, result, buf_size, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD);
     end = clock();
     difftime = ((double)(end - start)) / CLOCKS_PER_SEC;
 
@@ -37,9 +38,13 @@ int main(int argc, char *argv[])
         res += (result[i] % 17);
     }
 
-    if (rank == 0)
+    if (rank == 0) {
+        printf("P: %d\n", size);
+        printf("Size: %d\n", buf_size);
         printf("Time: %lf\n", difftime);
-    // printf("Hello from %d of %d and the result is: %d\n", rank, size, res);
+    }
+    printf("Hello from %d of %d and the result is: %d\n", rank, size, res);
+
     free(buffer);
     free(result);
     MPI_Finalize();

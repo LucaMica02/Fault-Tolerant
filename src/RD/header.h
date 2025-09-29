@@ -7,7 +7,6 @@
 #include <signal.h>
 #include <unistd.h>
 #include <math.h>
-#include <pthread.h>
 #include <time.h>
 #include <errno.h>
 #include <mpi.h>
@@ -44,8 +43,5 @@ void check_abort(Data *data, int *ranks_gc, int nf, int distance, MPI_Comm pworl
 
 /* Check if a rank in ranks is also in ranks_gc */
 int is_failed(int *ranks_gc, int *ranks, int n, int m);
-
-void log_failed(int *ranks, int nf);
-void log_struct(Data *data);
 
 #endif

@@ -1,12 +1,11 @@
 CC = mpicc
-CFLAGS = -Wall
+CFLAGS = -Wall 
 TARGET = main
 
-SRCS = main.c recursive_doubling.c errhandler.c util.c
-#SRCS = rd.c
+SRCS = recursive_doubling.c errhandler.c util.c
 
 $(TARGET): $(SRCS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS) -lm
 
 clean:
 	rm -f $(TARGET)
