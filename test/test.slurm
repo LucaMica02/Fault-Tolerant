@@ -2,7 +2,7 @@
 #SBATCH --job-name=ulfm
 #SBATCH --output=test_%j.out
 #SBATCH --error=test_%j.err
-#SBATCH --time=01:00:00
+#SBATCH --time=15:00:00
 #SBATCH --nodes=1                # number of nodes
 #SBATCH --ntasks-per-node=64     # MPI ranks per node
 #SBATCH --partition=dcgp_usr_prod
@@ -23,7 +23,7 @@ run_tests() {
     python3 check.py
 }
 
-repeats=5
+repeats=46
 
 for rep in $(seq 1 $repeats); do
     echo $rep
