@@ -7,8 +7,8 @@ def get_buffer_size(N):
     if N >= 190:
         k += 190 ** (N / 190)
     medium = (1.04 * 10**9) / k
-    return (int(medium * 1.8), int(medium * 2.2))
+    return int(medium * 2)
 
 N = int(sys.argv[1])
-min_bs, max_bs = get_buffer_size(N)
-print(min_bs, max_bs)
+buf_size = get_buffer_size(N)
+print(buf_size)

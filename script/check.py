@@ -39,14 +39,17 @@ def getParameters():
                 DELAY = int(line[-1])
             elif line[0] == "TIMEOUT":
                 TIMEOUT = int(line[-1])
-            elif line[0] == "real":
-                TIME = float(line[-1][2:-1])
             elif line[0] == "MPI_ABORT" or "MPI_ERRORS_ARE_FATAL" in line:
                 ABORT = True
     result = calcExpectedRes(N-1, BUF_SIZE)
-    KILLED, RIGHT_RESULT = mpiOutput(N, result)
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
     if TIME > TIMEOUT:
         DEADLOCK = True
+    with open("../out/check.txt", "w") as f:
+        if KILLED >= 1 and KILLED <= 2 and RIGHT_RESULT == True and DEADLOCK == False:
+            f.write("True")
+        else:
+            f.write("False")
     return [N, DELAY, BUF_SIZE, KILLED, TIME, DEADLOCK, SEGFAULT, ABORT, RIGHT_RESULT]
 
 # Calculate the expected result 
@@ -60,6 +63,7 @@ def calcExpectedRes(N, BUF_SIZE):
 # Read all the results from mpi_out
 def mpiOutput(N, result):
     RIGHT_RESULT = True
+    TIME = None
     killed = []
     survivors = set()
     with open("../out/mpi_out.txt", "r") as file:
@@ -70,10 +74,12 @@ def mpiOutput(N, result):
             survivors.add(int(line[2]))
             if int(line[-1]) != result:
                 RIGHT_RESULT = False
+        elif line[0] == "Time:":
+            TIME = float(line[-1])
     for i in range(N):
         if i not in survivors:
             killed.append(i)
-    return len(killed), RIGHT_RESULT
+    return len(killed), RIGHT_RESULT, TIME
 
 all_reduce_type = sys.argv[1]
 log_file = sys.argv[2]

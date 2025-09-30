@@ -14,14 +14,13 @@ if [[ "$MULTIPLE_KILL" == "1" ]]; then
         -B "$HOME/local" -B $TMPDIR:$TMPDIR $HOME/local/mpi-ft-ulfm.sif \
         mpiexec --with-ft ulfm -np $N ./$EXE_PATH $BUF_SIZE \
         > ../out/mpi_out.txt &
-    ./kill_multiple.sh "$DELAY" "$KILL" > ../out/docker_out.txt &
+    ./kill_single.sh "$DELAY" > ../out/docker_out.txt &
 else
     echo "Multiple kill disabled"
     timeout "$TIMEOUT" singularity exec \
         -B "$HOME/local" -B $TMPDIR:$TMPDIR $HOME/local/mpi-ft-ulfm.sif \
         mpiexec --with-ft ulfm -np $N ./$EXE_PATH $BUF_SIZE \
-        > ../out/mpi_out.txt &
-    ./kill_single.sh "$DELAY" > ../out/docker_out.txt &
+        > ../out/mpi_out.txt
 fi
 
 wait
