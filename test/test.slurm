@@ -23,7 +23,7 @@ run_tests() {
     python3 check.py
 }
 
-repeats=46
+repeats=50
 
 for rep in $(seq 1 $repeats); do
     echo $rep
@@ -32,8 +32,8 @@ for rep in $(seq 1 $repeats); do
     max_np=64
 
     while [ "$np" -le "$max_np" ]; do
-        buf_size=1
-        max_buf=33554432
+        buf_size=67108864   #1
+        max_buf=134217728   #33554432
 
         while [ "$buf_size" -le "$max_buf" ]; do
             run_tests "$np" "$buf_size"
