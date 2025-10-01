@@ -48,7 +48,7 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
         }
         int flag = 1;
         MPIX_Comm_agree(world_comm, &flag); // synchronization
-        error = MPI_Barrier(world_comm); // Detect failure at the previous step
+        error = MPI_Barrier(world_comm);    // Detect failure at the previous step
         if (error != MPI_SUCCESS)
         {
             if (error != 75) // MPIX_ERR_PROC_FAILED
@@ -56,9 +56,12 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
                 MPI_Abort(world_comm, error);
             }
             distance *= 2;
-            if (distance >= data->active_ranks_count) { // At the last step we switch src with dst
+            if (distance >= data->active_ranks_count)
+            { // At the last step we switch src with dst
                 errhandler(&world_comm, &comm, &distance, dst, send_size, data, datatype);
-            } else {
+            }
+            else
+            {
                 errhandler(&world_comm, &comm, &distance, src, send_size, data, datatype);
             }
             distance /= 2;
@@ -135,7 +138,8 @@ int main(int argc, char *argv[])
         res += (result[i] % 17);
     }
 
-    if (rank == 0) {
+    if (rank == 0)
+    {
         printf("P: %d\n", size);
         printf("Size: %d\n", buf_size);
         printf("Time: %lf\n", difftime);

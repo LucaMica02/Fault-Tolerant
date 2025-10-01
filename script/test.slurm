@@ -5,7 +5,7 @@
 #SBATCH --error=RD_%j.err
 #SBATCH --time=00:30:00
 #SBATCH --nodes=1               # number of nodes
-#SBATCH --ntasks-per-node=32    # MPI ranks per node (Ask the max value for N)
+#SBATCH --ntasks-per-node=64    # MPI ranks per node (Ask the max value for N)
 #SBATCH --partition=dcgp_usr_prod
 #SBATCH --account=IscrC_ASCEND_0
 
@@ -19,8 +19,10 @@ run_experiments() {
     local log_file=$5
 
     for run in $(seq 1 "$runs"); do
-        N=$((RANDOM % (32 - 4 + 1) + 4))     
-        DELAY=$((RANDOM % (3 - 2 + 1) + 2))
+        n_opt=(4 8 16 32 64)
+        N=${n_opt[$RANDOM % ${#n_opt[@]}]}   
+        options=(1 1.5 2 2.5 3)
+        DELAY=${options[$RANDOM % ${#options[@]}]}
         read MIN MAX <<< $(python3 get_bs.py "$N")
         BUF_SIZE=$((RANDOM % (MAX - MIN + 1) + MIN))
         TIMEOUT=30
@@ -46,6 +48,22 @@ run_experiments() {
 }
 
 # Call the function with 100 runs
-run_experiments 100 0 ../src/RD/main RD ../log/log_single_RD.csv
-run_experiments 100 1 ../src/RD/main RD ../log/log_multiple_RD.csv
-run_experiments 100 0 ../src/Raben/main Raben ../log/log_single_Raben.csv
+run_experiments 10 1 ../src/RD/main RD ../log/log_single_RD.csv
+#run_experiments 100 1 ../src/RD/main RD ../log/log_multiple_RD.csv
+run_experiments 10 1 ../src/Raben/main Raben ../log/log_single_Raben.csv
+
+run_experiments 10 1 ../src/RD/main RD ../log/log_single_RD.csv
+#run_experiments 100 1 ../src/RD/main RD ../log/log_multiple_RD.csv
+run_experiments 10 1 ../src/Raben/main Raben ../log/log_single_Raben.csv
+
+run_experiments 10 1 ../src/RD/main RD ../log/log_single_RD.csv
+#run_experiments 100 1 ../src/RD/main RD ../log/log_multiple_RD.csv
+run_experiments 10 1 ../src/Raben/main Raben ../log/log_single_Raben.csv
+
+run_experiments 10 1 ../src/RD/main RD ../log/log_single_RD.csv
+#run_experiments 100 1 ../src/RD/main RD ../log/log_multiple_RD.csv
+run_experiments 10 1 ../src/Raben/main Raben ../log/log_single_Raben.csv
+
+run_experiments 10 1 ../src/RD/main RD ../log/log_single_RD.csv
+#run_experiments 100 1 ../src/RD/main RD ../log/log_multiple_RD.csv
+run_experiments 10 1 ../src/Raben/main Raben ../log/log_single_Raben.csv

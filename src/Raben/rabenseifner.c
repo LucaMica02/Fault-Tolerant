@@ -215,9 +215,9 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
             {
                 MPI_Request req;
                 MPI_Isend((char *)rbuf + (ptrdiff_t)sindex[step] * extent,
-                      scount[step], dtype, dest, 0, *comm, &req);
+                          scount[step], dtype, dest, 0, *comm, &req);
                 err = MPI_Recv((char *)tmp_buf + (ptrdiff_t)rindex[step] * extent,
-                     rcount[step], dtype, dest, 0, *comm, MPI_STATUS_IGNORE);
+                               rcount[step], dtype, dest, 0, *comm, MPI_STATUS_IGNORE);
                 MPI_Wait(&req, MPI_STATUS_IGNORE);
             }
 
@@ -241,10 +241,10 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
                 wsize = rcount[step];
             }
         }
-        
+
         int flag = 1;
         MPIX_Comm_agree(*comm, &flag); // synchronization
-        err = MPI_Barrier(*comm); // detect failure at the previous step
+        err = MPI_Barrier(*comm);      // detect failure at the previous step
         if (err != MPI_SUCCESS)
         {
             if (err != 75)
@@ -341,7 +341,7 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
         {
             /* Odd process -- recv result from rank - 1 */
             MPI_Recv(rbuf, count, dtype, rank - 1,
-                           0, *comm, MPI_STATUS_IGNORE);
+                     0, *comm, MPI_STATUS_IGNORE);
         }
         else
         {
@@ -393,7 +393,8 @@ int test(int buf_size, int rank, int size, MPI_Comm *comm)
         res += (result[i] % 17);
     }
 
-    if (rank == 0) {
+    if (rank == 0)
+    {
         printf("P: %d\n", size);
         printf("Size: %d\n", buf_size);
         printf("Time: %lf\n", difftime);
@@ -415,7 +416,6 @@ int main(int argc, char *argv[])
 
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
 
     if (argc < 2)
     {

@@ -17,46 +17,48 @@ run_experiments() {
     local allreduce_type=$3
     local log_file=$4
     local np=$5
+    local delay=$6
+    local size=$7
 
     for run in $(seq 1 "$runs"); do 
-        DELAY=$((RANDOM % (3 - 2 + 1) + 2))
-        read BUF_SIZE <<< $(python3 get_bs.py "$np")
         TIMEOUT=30
+        options=(0.8 1 1.2 1.5 1.7 2 2.2)
+        DELAY=${options[$RANDOM % ${#options[@]}]}
 
         echo "Generated values:" > ../out/test_log.txt
         echo "N = $np" >> ../out/test_log.txt
         echo "DELAY = $DELAY" >> ../out/test_log.txt
-        echo "BUF_SIZE = $BUF_SIZE" >> ../out/test_log.txt
+        echo "BUF_SIZE = $size" >> ../out/test_log.txt
         echo "TIMEOUT = $TIMEOUT" >> ../out/test_log.txt
 
         # Capture the time it takes for the run.sh script to execute
         {
-            time ./run.sh "$np" "$DELAY" "$BUF_SIZE" "$TIMEOUT" "0" "$exe"
+            time ./run.sh "$np" "$delay" "$size" "$TIMEOUT" "0" "$exe"
         } >> ../out/test_log.txt 2>&1
 
         python3 check.py "$allreduce_type" "$log_file"
 
         rm -f ../out/mpi_out.txt ../out/docker_out.txt ../out/test_log.txt
 
-        echo $np $run "No Fault"
+        echo $np $run $allreduce_type "No Fault"
         sleep 1
     done
 
     count=1
     while [ "$count" -le "$runs" ]; do
-        DELAY=$((RANDOM % (3 - 2 + 1) + 2))
-        read BUF_SIZE <<< $(python3 get_bs.py "$np")
         TIMEOUT=30
+        options=(0.8 1 1.2 1.5 1.7 2 2.2)
+        DELAY=${options[$RANDOM % ${#options[@]}]}
 
         echo "Generated values:" > ../out/test_log.txt
         echo "N = $np" >> ../out/test_log.txt
         echo "DELAY = $DELAY" >> ../out/test_log.txt
-        echo "BUF_SIZE = $BUF_SIZE" >> ../out/test_log.txt
+        echo "BUF_SIZE = $size" >> ../out/test_log.txt
         echo "TIMEOUT = $TIMEOUT" >> ../out/test_log.txt
 
         # Capture the time it takes for the run.sh script to execute
         {
-            time ./run.sh "$np" "$DELAY" "$BUF_SIZE" "$TIMEOUT" "1" "$exe"
+            time ./run.sh "$np" "$DELAY" "$size" "$TIMEOUT" "1" "$exe"
         } >> ../out/test_log.txt 2>&1
 
         python3 check.py "$allreduce_type" "$log_file"
@@ -68,16 +70,22 @@ run_experiments() {
 
         rm -f ../out/mpi_out.txt ../out/docker_out.txt ../out/test_log.txt
 
-        echo $np $count "Fault"
+        echo $np $count $allreduce_type "Fault"
         sleep 1
     done
 }
 
-min_np=4
-max_np=64
+run_experiments 40 ../src/RD/main RD ../log/log_single_RD.csv 4 2.0 187205409
+run_experiments 40 ../src/Raben/main Raben ../log/log_single_Raben.csv 4 2.0 187228224
 
-while [ "$min_np" -le "$max_np" ]; do
-    run_experiments 10 ../src/RD/main RD ../log/log_single_RD.csv $min_np
-    run_experiments 10 ../src/Raben/main Raben ../log/log_single_Raben.csv $min_np
-    min_np=$((min_np * 2))
-done
+run_experiments 40 ../src/RD/main RD ../log/log_single_RD.csv 8 2.0 133742920
+run_experiments 40 ../src/Raben/main Raben ../log/log_single_Raben.csv 8 2.0 133732254
+
+run_experiments 40 ../src/RD/main RD ../log/log_single_RD.csv 16 2.0 110123560
+run_experiments 40 ../src/Raben/main Raben ../log/log_single_Raben.csv 16 2.0 110124421
+
+run_experiments 40 ../src/RD/main RD ../log/log_single_RD.csv 32 2.0 56732120
+run_experiments 40 ../src/Raben/main Raben ../log/log_single_Raben.csv 32 1.2 63045188
+
+#run_experiments 10 ../src/RD/main RD ../log/log_single_RD.csv 64 1.5 28825062
+#run_experiments 10 ../src/Raben/main Raben ../log/log_single_Raben.csv 64 1.0 32008195
