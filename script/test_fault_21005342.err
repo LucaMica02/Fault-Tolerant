@@ -1,0 +1,304 @@
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "check.py", line 90, in <module>
+    parameters = getParameters()
+  File "check.py", line 47, in getParameters
+    KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
+  File "check.py", line 77, in mpiOutput
+    if line[0] == "Hello":
+IndexError: list index out of range

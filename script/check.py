@@ -19,11 +19,11 @@ def append_with_separator(algo, input_file1, input_file2, input_file3, text, out
 # take the parameters from test_log  
 def getParameters():
     DEADLOCK = False
+    TIME_T = None
+    TIME = None
     SEGFAULT = False
     ABORT = False
     RIGHT_RESULT = False
-    D = False
-    WR = False
     with open("../out/test_log.txt", "r") as file:
         lines = file.readlines()
     for line in lines:
@@ -36,14 +36,18 @@ def getParameters():
             elif line[0] == "BUF_SIZE":
                 BUF_SIZE = int(line[-1])
             elif line[0] == "DELAY":
-                DELAY = int(line[-1])
+                DELAY = float(line[-1])
             elif line[0] == "TIMEOUT":
                 TIMEOUT = int(line[-1])
+            elif line[0] == "real":
+                TIME_T = float(line[-1][2:-1])
             elif line[0] == "MPI_ABORT" or "MPI_ERRORS_ARE_FATAL" in line:
                 ABORT = True
     result = calcExpectedRes(N-1, BUF_SIZE)
     KILLED, RIGHT_RESULT, TIME = mpiOutput(N, result)
-    if TIME > TIMEOUT:
+    if not TIME:
+        TIME = TIME_T
+    if TIME_T > TIMEOUT:
         DEADLOCK = True
     with open("../out/check.txt", "w") as f:
         if KILLED >= 1 and KILLED <= 2 and RIGHT_RESULT == True and DEADLOCK == False:
