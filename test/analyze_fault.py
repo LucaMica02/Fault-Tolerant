@@ -1,35 +1,56 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+def plot_data(input_file):
+    # Read CSV
+    df = pd.read_csv(input_file, delimiter=";")
+
+    # Convert columns to numeric
+    df["N"] = pd.to_numeric(df["N"], errors="coerce")
+    df["KILLED"] = pd.to_numeric(df["KILLED"], errors="coerce")
+    df["TIME"] = pd.to_numeric(df["TIME"], errors="coerce")
+
+    # Group into KILLED=0 vs KILLED=1
+    df["KILLED_GROUP"] = df["KILLED"].apply(lambda x: 0 if x == 0 else 1)
+
+    # Compute mean and std for each (N, KILLED_GROUP)
+    stats = df.groupby(["N", "KILLED_GROUP"])["TIME"].agg(["mean", "std"]).reset_index()
+
+    # Pivot for mean and std
+    pivot_mean = stats.pivot(index="N", columns="KILLED_GROUP", values="mean").reset_index()
+    pivot_std  = stats.pivot(index="N", columns="KILLED_GROUP", values="std").reset_index()
+
+    pivot_mean = pivot_mean.rename(columns={0: "MEAN_KILLED_0", 1: "MEAN_KILLED_1"})
+    pivot_std  = pivot_std.rename(columns={0: "STD_KILLED_0", 1: "STD_KILLED_1"})
+
+    # ---- Plot ----
+    plt.figure(figsize=(10,6))
+
+    # Raw scatter points (all runs)
+    colors = {0: "blue", 1: "red"}
+    for group in [0, 1]:
+        subset = df[df["KILLED_GROUP"] == group]
+        plt.scatter(subset["N"], subset["TIME"], alpha=0.3, s=20,
+                    color=colors[group], label=f"KILLED={group} raw")
+
+    # Mean ± std (error bars + line)
+    plt.errorbar(pivot_mean["N"], pivot_mean["MEAN_KILLED_0"], 
+                 yerr=pivot_std["STD_KILLED_0"], fmt="-o", capsize=5,
+                 color="blue", linewidth=2, label="KILLED=0 (avg ± std)")
+
+    plt.errorbar(pivot_mean["N"], pivot_mean["MEAN_KILLED_1"], 
+                 yerr=pivot_std["STD_KILLED_1"], fmt="-o", capsize=5,
+                 color="red", linewidth=2, label="KILLED=1 (avg ± std)")
+
+    plt.xlabel("N")
+    plt.ylabel("TIME")
+    plt.title("Execution TIME per N (raw + mean ± std)")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
 # Parameters
-input_file = "data_fault/log_single_RD_clean.csv"  # or your latest dataset
-
-# Read CSV
-df = pd.read_csv(input_file, delimiter=";")
-
-# Convert columns to numeric
-df["N"] = pd.to_numeric(df["N"], errors="coerce")
-df["KILLED"] = pd.to_numeric(df["KILLED"], errors="coerce")
-df["TIME"] = pd.to_numeric(df["TIME"], errors="coerce")
-
-# Group into KILLED=0 vs KILLED>0
-df["KILLED_GROUP"] = df["KILLED"].apply(lambda x: 0 if x == 0 else 1)
-
-# Compute mean TIME for each (N, KILLED_GROUP)
-avg_times = df.groupby(["N", "KILLED_GROUP"])["TIME"].mean().reset_index()
-
-# Pivot to get both groups side by side
-pivot = avg_times.pivot(index="N", columns="KILLED_GROUP", values="TIME").reset_index()
-pivot.columns = ["N", "TIME_KILLED_0", "TIME_KILLED_GT0"]
-
-# Plot
-plt.figure(figsize=(8,5))
-plt.plot(pivot["N"], pivot["TIME_KILLED_0"], marker="o", linewidth=2, label="KILLED = 0")
-plt.plot(pivot["N"], pivot["TIME_KILLED_GT0"], marker="o", linewidth=2, label="KILLED > 0")
-
-plt.xlabel("N")
-plt.ylabel("Average TIME")
-plt.title("Average TIME per N (Grouped by KILLED)")
-plt.legend()
-plt.grid(True)
-plt.show()
+RD_file = "data_fault/log_single_RD_clean.csv"
+raben_file = "data_fault/log_single_Raben_clean.csv"
+plot_data(RD_file)
+plot_data(raben_file)

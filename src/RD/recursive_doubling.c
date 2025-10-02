@@ -28,11 +28,13 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
         /* Exchange the data between ranks */
         if (partner < size && data->active != 0)
         {
-            MPI_Request req;
+            /*MPI_Request req;
             MPI_Isend(src, send_size, datatype, partner, 0, comm, &req);
             MPI_Recv(dst, send_size, datatype, partner, 0, comm, MPI_STATUS_IGNORE);
-            MPI_Wait(&req, MPI_STATUS_IGNORE);
-
+            MPI_Wait(&req, MPI_STATUS_IGNORE);*/
+            MPI_Sendrecv(src, send_size, datatype, partner, 0,
+                         dst, send_size, datatype, partner, 0,
+                         comm, MPI_STATUS_IGNORE);
             /*
              * We accumulate the result in src to send it at the parner in the next iteration
              * to avoid doing the memcpy at the end, if is the last reduction take the dst like a out buffer

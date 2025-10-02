@@ -2,7 +2,7 @@
 #SBATCH --job-name=ulfm
 #SBATCH --output=test_%j.out
 #SBATCH --error=test_%j.err
-#SBATCH --time=15:00:00
+#SBATCH --time=12:00:00
 #SBATCH --nodes=1                # number of nodes
 #SBATCH --ntasks-per-node=64     # MPI ranks per node
 #SBATCH --partition=dcgp_usr_prod
@@ -32,8 +32,8 @@ for rep in $(seq 1 $repeats); do
     max_np=64
 
     while [ "$np" -le "$max_np" ]; do
-        buf_size=67108864   #1
-        max_buf=134217728   #33554432
+        buf_size=1
+        max_buf=134217728  
 
         while [ "$buf_size" -le "$max_buf" ]; do
             run_tests "$np" "$buf_size"

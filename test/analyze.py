@@ -70,7 +70,6 @@ def plot_experiment(main_csv, original_csv, label, num_xticks=8):
     plt.tight_layout()
     plt.show()
 
-
 # Example usage
 plot_experiment("data/rd.csv", "data/original_rd.csv", "RD")
 plot_experiment("data/raben.csv", "data/original_raben.csv", "Raben")

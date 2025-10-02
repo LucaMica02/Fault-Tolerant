@@ -206,19 +206,27 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
             if (step == 0)
             {
                 /* Send the whole buffer */
-                MPI_Request req;
+                /*MPI_Request req;
                 MPI_Isend(rbuf, count, dtype, dest, 0, *comm, &req);
                 err = MPI_Recv(tmp_buf, count, dtype, dest, 0, *comm, MPI_STATUS_IGNORE);
-                MPI_Wait(&req, MPI_STATUS_IGNORE);
+                MPI_Wait(&req, MPI_STATUS_IGNORE);*/
+                err = MPI_Sendrecv(rbuf, count, dtype, dest, 0,
+                                   tmp_buf, count, dtype, dest, 0,
+                                   *comm, MPI_STATUS_IGNORE);
             }
             else
             {
+                /*
                 MPI_Request req;
                 MPI_Isend((char *)rbuf + (ptrdiff_t)sindex[step] * extent,
                           scount[step], dtype, dest, 0, *comm, &req);
                 err = MPI_Recv((char *)tmp_buf + (ptrdiff_t)rindex[step] * extent,
                                rcount[step], dtype, dest, 0, *comm, MPI_STATUS_IGNORE);
-                MPI_Wait(&req, MPI_STATUS_IGNORE);
+                MPI_Wait(&req, MPI_STATUS_IGNORE);*/
+                err = MPI_Sendrecv(
+                    (char *)rbuf + (ptrdiff_t)sindex[step] * extent, scount[step], dtype, dest, 0,
+                    (char *)tmp_buf + (ptrdiff_t)rindex[step] * extent, rcount[step], dtype, dest, 0,
+                    *comm, MPI_STATUS_IGNORE);
             }
 
             if (err == MPI_SUCCESS)
@@ -295,12 +303,16 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
              * Send rcount[step] elements from rbuf[rindex[step]...]
              * Recv scount[step] elements to rbuf[sindex[step]...]
              */
-            MPI_Request req;
+            /*MPI_Request req;
             MPI_Isend((char *)rbuf + (ptrdiff_t)rindex[step] * extent,
                       rcount[step], dtype, dest, 0, *comm, &req);
             MPI_Recv((char *)rbuf + (ptrdiff_t)sindex[step] * extent,
                      scount[step], dtype, dest, 0, *comm, MPI_STATUS_IGNORE);
-            MPI_Wait(&req, MPI_STATUS_IGNORE);
+            MPI_Wait(&req, MPI_STATUS_IGNORE);*/
+            MPI_Sendrecv(
+                (char *)rbuf + (ptrdiff_t)rindex[step] * extent, rcount[step], dtype, dest, 0,
+                (char *)rbuf + (ptrdiff_t)sindex[step] * extent, scount[step], dtype, dest, 0,
+                *comm, MPI_STATUS_IGNORE);
         }
 
         int flag = 1;
@@ -346,9 +358,10 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
         else
         {
             /* Even process -- send result to rank + 1 */
-            MPI_Request req;
+            /*MPI_Request req;
             MPI_Isend(rbuf, count, dtype, rank + 1, 0, *comm, &req);
-            MPI_Wait(&req, MPI_STATUS_IGNORE);
+            MPI_Wait(&req, MPI_STATUS_IGNORE);*/
+            MPI_Send(rbuf, count, dtype, rank + 1, 0, *comm);
         }
     }
 
