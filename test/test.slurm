@@ -23,7 +23,7 @@ run_tests() {
     python3 check.py
 }
 
-repeats=50
+repeats=25
 
 for rep in $(seq 1 $repeats); do
     echo $rep

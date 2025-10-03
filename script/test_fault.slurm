@@ -75,17 +75,14 @@ run_experiments() {
     done
 }
 
-run_experiments 50 ../src/RD/main RD ../log/log_single_RD.csv 4 2.0 187205409
-run_experiments 50 ../src/Raben/main Raben ../log/log_single_Raben.csv 4 2.0 187228224
+run_experiments 50 ../src/RD/main RD ../log/log_single_RD_block.csv 4 2.0 187205409
+run_experiments 50 ../src/Raben/main Raben ../log/log_single_Raben_block.csv 4 2.0 187228224
 
-run_experiments 50 ../src/RD/main RD ../log/log_single_RD.csv 8 2.0 133742920
-run_experiments 50 ../src/Raben/main Raben ../log/log_single_Raben.csv 8 2.0 133732254
+run_experiments 50 ../src/RD/main RD ../log/log_single_RD_block.csv 8 2.0 133742920
+run_experiments 50 ../src/Raben/main Raben ../log/log_single_Raben_block.csv 8 2.0 133732254
 
-run_experiments 50 ../src/RD/main RD ../log/log_single_RD.csv 16 2.0 110123560
-run_experiments 50 ../src/Raben/main Raben ../log/log_single_Raben.csv 16 2.0 110124421
+run_experiments 50 ../src/RD/main RD ../log/log_single_RD_block.csv 16 2.0 110123560
+run_experiments 50 ../src/Raben/main Raben ../log/log_single_Raben_block.csv 16 2.0 110124421
 
-run_experiments 50 ../src/RD/main RD ../log/log_single_RD.csv 32 2.0 56732120
-run_experiments 50 ../src/Raben/main Raben ../log/log_single_Raben.csv 32 1.2 63045188
-
-#run_experiments 10 ../src/RD/main RD ../log/log_single_RD.csv 64 1.5 28825062
-#run_experiments 10 ../src/Raben/main Raben ../log/log_single_Raben.csv 64 1.0 32008195
+run_experiments 50 ../src/RD/main RD ../log/log_single_RD_block.csv 32 2.0 56732120
+run_experiments 50 ../src/Raben/main Raben ../log/log_single_Raben_block.csv 32 1.2 63045188
