@@ -8,7 +8,7 @@ fi
 
 # Create directories used for run the test
 mkdir -p ../out
-mkdir -p ../logs
+mkdir -p ../log
 
 MULTIPLE_KILL=$1
 LOG_FILE=$2
@@ -30,11 +30,11 @@ echo "TIMEOUT = $TIMEOUT" >> ../out/test_log.txt
 
 # Capture the time it takes for the run.sh script to execute
 { 
-    time ./run.sh $N $DELAY $BUF_SIZE $TIMEOUT "$MULTIPLE_KILL" $EXE; 
+    time ./run_mpi.sh $N $DELAY $BUF_SIZE $TIMEOUT "$MULTIPLE_KILL" $EXE; 
 } >> ../out/test_log.txt 2>&1
 
 # Check for correctess and write back in the log file
-python3 check.py "$ALLREDUCE_TYPE" "$LOG_FILE"
+python3 ../analysis/check_fault.py "$ALLREDUCE_TYPE" "$LOG_FILE"
 
 # Remove the temp files
 rm ../out/mpi_out.txt

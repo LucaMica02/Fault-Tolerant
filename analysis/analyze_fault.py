@@ -52,10 +52,10 @@ def plot_data(input_file):
     plt.show()
 
 # Parameters
-RD_file = "data_fault/log_single_RD_clean.csv"
-raben_file = "data_fault/log_single_Raben_clean.csv"
-RD_file_block = "data_fault_block/log_single_RD_clean.csv"
-raben_file_block = "data_fault_block/log_single_Raben_clean.csv"
+RD_file = "../data/data_fault/log_single_RD_clean.csv"
+raben_file = "../data/data_fault/log_single_Raben_clean.csv"
+RD_file_block = "../data/data_fault_block/log_single_RD_clean.csv"
+raben_file_block = "../data/data_fault_block/log_single_Raben_clean.csv"
 plot_data(RD_file)
 plot_data(raben_file)
 plot_data(RD_file_block)

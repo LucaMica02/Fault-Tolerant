@@ -1,15 +1,15 @@
 import os, csv
 
 ### DEFINE THE FILES PATH HERE ###
-RD_FILE = "tmp/rd.txt"
-RD_ORIGINAL_FILE = "tmp/original_rd.txt"
-RABEN_FILE = "tmp/raben.txt"
-RABEN_ORIGINAL_FILE = "tmp/original_raben.txt"
-RD_FILE_CSV = "data_block/rd.csv"
-RD_ORIGINAL_FILE_CSV = "data_block/original_rd.csv"
-RABEN_FILE_CSV = "data_block/raben.csv"
-RABEN_ORIGINAL_FILE_CSV = "data_block/original_raben.csv"
-ERROR_FILE = "tmp/error.txt"
+RD_FILE = "../out/rd.txt"
+RD_ORIGINAL_FILE = "../out/original_rd.txt"
+RABEN_FILE = "../out/raben.txt"
+RABEN_ORIGINAL_FILE = "../out/original_raben.txt"
+RD_FILE_CSV = "../data/data_compare_block/rd.csv"
+RD_ORIGINAL_FILE_CSV = "../data/data_compare_block/original_rd.csv"
+RABEN_FILE_CSV = "../data/data_compare_block/raben.csv"
+RABEN_ORIGINAL_FILE_CSV = "../data/data_compare_block/original_raben.csv"
+ERROR_FILE = "../out/error.txt"
 
 # Read output data from the file
 def read(file):

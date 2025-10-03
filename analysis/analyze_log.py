@@ -94,5 +94,6 @@ def plotLog(filename, title):
     plt.title(title)
     plt.show()
 
+# Example usage
 # plotLog('../log/log_single_RD.csv', "RD single kill")
 # plotLog('../log/log_single_Raben.csv', "Raben single kill")

@@ -33,10 +33,10 @@ run_experiments() {
         echo "TIMEOUT = $TIMEOUT" >> ../out/test_log.txt
 
         {
-            time ./run.sh "$np" "$delay" "$size" "$TIMEOUT" "0" "$exe"
+            time ./../run/run_mpi.sh "$np" "$delay" "$size" "$TIMEOUT" "0" "$exe"
         } >> ../out/test_log.txt 2>&1
 
-        python3 check.py "$allreduce_type" "$log_file"
+        python3 ../analysis/check_fault.py "$allreduce_type" "$log_file"
 
         rm -f ../out/mpi_out.txt ../out/docker_out.txt ../out/test_log.txt
 
@@ -58,10 +58,10 @@ run_experiments() {
         echo "TIMEOUT = $TIMEOUT" >> ../out/test_log.txt
 
         {
-            time ./run.sh "$np" "$DELAY" "$size" "$TIMEOUT" "1" "$exe"
+            time ./../run/run_mpi.sh "$np" "$DELAY" "$size" "$TIMEOUT" "1" "$exe"
         } >> ../out/test_log.txt 2>&1
 
-        python3 check.py "$allreduce_type" "$log_file"
+        python3 ../analysis/check_fault.py "$allreduce_type" "$log_file"
         check=$(<"../out/check.txt")
 
         # Increment the count if and only if there was a single kill and no error occurs
@@ -69,21 +69,21 @@ run_experiments() {
             count=$((count + 1))
         fi
 
-        rm -f ../out/mpi_out.txt ../out/docker_out.txt ../out/test_log.txt
+        rm -f ../out/mpi_out.txt ../out/docker_out.txt ../out/test_log.txt ../out/check.txt
 
         echo $np $count $allreduce_type "Fault"
         sleep 1
     done
 }
 
-run_experiments 50 ../src/RD/main RD ../log/log_single_RD_block.csv 4 2.0 187205409
-run_experiments 50 ../src/Raben/main Raben ../log/log_single_Raben_block.csv 4 2.0 187228224
+run_experiments 50 ../src/rd/main RD ../log/log_single_RD_block.csv 4 2.0 187205409
+run_experiments 50 ../src/raben/main Raben ../log/log_single_Raben_block.csv 4 2.0 187228224
 
-run_experiments 50 ../src/RD/main RD ../log/log_single_RD_block.csv 8 2.0 133742920
-run_experiments 50 ../src/Raben/main Raben ../log/log_single_Raben_block.csv 8 2.0 133732254
+run_experiments 50 ../src/rd/main RD ../log/log_single_RD_block.csv 8 2.0 133742920
+run_experiments 50 ../src/raben/main Raben ../log/log_single_Raben_block.csv 8 2.0 133732254
 
-run_experiments 50 ../src/RD/main RD ../log/log_single_RD_block.csv 16 2.0 110123560
-run_experiments 50 ../src/Raben/main Raben ../log/log_single_Raben_block.csv 16 2.0 110124421
+run_experiments 50 ../src/rd/main RD ../log/log_single_RD_block.csv 16 2.0 110123560
+run_experiments 50 ../src/raben/main Raben ../log/log_single_Raben_block.csv 16 2.0 110124421
 
-run_experiments 50 ../src/RD/main RD ../log/log_single_RD_block.csv 32 2.0 56732120
-run_experiments 50 ../src/Raben/main Raben ../log/log_single_Raben_block.csv 32 1.2 63045188
+run_experiments 50 ../src/rd/main RD ../log/log_single_RD_block.csv 32 2.0 56732120
+run_experiments 50 ../src/raben/main Raben ../log/log_single_Raben_block.csv 32 1.2 63045188

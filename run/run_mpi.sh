@@ -24,6 +24,6 @@ fi
 timeout "$TIMEOUT" singularity exec \
     -B "$HOME/local" -B $TMPDIR:$TMPDIR $HOME/local/mpi-ft-ulfm.sif \
     mpiexec --with-ft ulfm -np $N ./$EXE_PATH $BUF_SIZE > ../out/mpi_out.txt &
-    ./kill.sh "$DELAY" "$KILL" > ../out/docker_out.txt &
+    ./kill_procs.sh "$DELAY" "$KILL" > ../out/docker_out.txt &
 
 wait

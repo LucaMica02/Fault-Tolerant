@@ -4,10 +4,10 @@ CFLAGS = -Wall
 # Targets
 all: mpi ulfm
 
-mpi: mpi.c
+mpi: mpi_test.c
 	$(CC) $(CFLAGS) -o mpi.exe mpi.c
 
-ulfm: ulfm.c
+ulfm: ulfm_test.c
 	$(CC) $(CFLAGS) -o ulfm.exe ulfm.c
 
 clean:
