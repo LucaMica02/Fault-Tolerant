@@ -1,18 +1,16 @@
 #!/bin/bash
 
-#SBATCH --job-name=RD
-#SBATCH --output=RD_%j.out
-#SBATCH --error=RD_%j.err
-#SBATCH --time=00:30:00
+#SBATCH --job-name=test
+#SBATCH --output=test_%j.out
+#SBATCH --error=test_%j.err
+#SBATCH --time=10:00:00
 #SBATCH --nodes=1               # number of nodes
 #SBATCH --ntasks-per-node=64    # MPI ranks per node (Ask the max value for N)
-#SBATCH --partition=dcgp_usr_prod
-#SBATCH --account=IscrC_ASCEND_0
 
 mkdir -p ../out
 
 run_experiments() {
-    local runs=$1  # Number of experiments to run
+    local runs=$1
     local multiple_kill=$2
     local exe=$3
     local allreduce_type=$4
@@ -42,28 +40,11 @@ run_experiments() {
 
         rm -f ../out/mpi_out.txt ../out/docker_out.txt ../out/test_log.txt
 
-        echo $run
+        echo $run $allreduce_type
         sleep 1
     done
 }
 
 # Call the function with 100 runs
-run_experiments 10 1 ../src/RD/main RD ../log/log_single_RD.csv
-#run_experiments 100 1 ../src/RD/main RD ../log/log_multiple_RD.csv
-run_experiments 10 1 ../src/Raben/main Raben ../log/log_single_Raben.csv
-
-run_experiments 10 1 ../src/RD/main RD ../log/log_single_RD.csv
-#run_experiments 100 1 ../src/RD/main RD ../log/log_multiple_RD.csv
-run_experiments 10 1 ../src/Raben/main Raben ../log/log_single_Raben.csv
-
-run_experiments 10 1 ../src/RD/main RD ../log/log_single_RD.csv
-#run_experiments 100 1 ../src/RD/main RD ../log/log_multiple_RD.csv
-run_experiments 10 1 ../src/Raben/main Raben ../log/log_single_Raben.csv
-
-run_experiments 10 1 ../src/RD/main RD ../log/log_single_RD.csv
-#run_experiments 100 1 ../src/RD/main RD ../log/log_multiple_RD.csv
-run_experiments 10 1 ../src/Raben/main Raben ../log/log_single_Raben.csv
-
-run_experiments 10 1 ../src/RD/main RD ../log/log_single_RD.csv
-#run_experiments 100 1 ../src/RD/main RD ../log/log_multiple_RD.csv
-run_experiments 10 1 ../src/Raben/main Raben ../log/log_single_Raben.csv
+run_experiments 100 1 ../src/RD/main RD ../log/log_single_RD.csv
+run_experiments 100 1 ../src/Raben/main Raben ../log/log_single_Raben.csv

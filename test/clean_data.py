@@ -1,5 +1,4 @@
 import csv
-import random
 
 def clean_data(input_file, output_file):
     Ns = [4, 8, 16, 32]
@@ -36,10 +35,10 @@ def clean_data(input_file, output_file):
     print(f"Saved cleaned dataset to {output_file}")
 
 # Parameters
-RD_inp = "data_fault/log_single_RD.csv"
-RD_out = "data_fault/log_single_RD_clean.csv"
-Raben_inp = "data_fault/log_single_Raben.csv"
-Raben_out = "data_fault/log_single_Raben_clean.csv"
+RD_inp = "data_fault_block/log_single_RD.csv"
+RD_out = "data_fault_block/log_single_RD_clean.csv"
+Raben_inp = "data_fault_block/log_single_Raben.csv"
+Raben_out = "data_fault_block/log_single_Raben_clean.csv"
 
 clean_data(RD_inp, RD_out)
 clean_data(Raben_inp, Raben_out)

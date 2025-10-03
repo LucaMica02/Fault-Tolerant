@@ -73,3 +73,5 @@ def plot_experiment(main_csv, original_csv, label, num_xticks=8):
 # Example usage
 plot_experiment("data/rd.csv", "data/original_rd.csv", "RD")
 plot_experiment("data/raben.csv", "data/original_raben.csv", "Raben")
+plot_experiment("data_block/rd.csv", "data_block/original_rd.csv", "RD")
+plot_experiment("data_block/raben.csv", "data_block/original_raben.csv", "Raben")
