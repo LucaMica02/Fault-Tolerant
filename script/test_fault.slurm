@@ -6,13 +6,13 @@
 #SBATCH --time=12:00:00
 #SBATCH --nodes=1               # number of nodes
 #SBATCH --ntasks-per-node=64    # MPI ranks per node (Ask the max value for N)
-#SBATCH --partition=dcgp_usr_prod
-#SBATCH --account=IscrC_ASCEND_0
 
+# Create directories used for run the test
 mkdir -p ../out
+mkdir -p ../log
 
 run_experiments() {
-    local runs=$1  # Number of experiments to run
+    local runs=$1 
     local exe=$2
     local allreduce_type=$3
     local log_file=$4
@@ -20,6 +20,7 @@ run_experiments() {
     local delay=$6
     local size=$7
 
+    # Do $run runs with no kill and keep the logs data
     for run in $(seq 1 "$runs"); do 
         TIMEOUT=30
         options=(0.8 1 1.2 1.5 1.7 2 2.2)
@@ -31,7 +32,6 @@ run_experiments() {
         echo "BUF_SIZE = $size" >> ../out/test_log.txt
         echo "TIMEOUT = $TIMEOUT" >> ../out/test_log.txt
 
-        # Capture the time it takes for the run.sh script to execute
         {
             time ./run.sh "$np" "$delay" "$size" "$TIMEOUT" "0" "$exe"
         } >> ../out/test_log.txt 2>&1
@@ -44,6 +44,7 @@ run_experiments() {
         sleep 1
     done
 
+    # Do $run runs with 1 single kill and keep the logs data
     count=1
     while [ "$count" -le "$runs" ]; do
         TIMEOUT=30
@@ -56,7 +57,6 @@ run_experiments() {
         echo "BUF_SIZE = $size" >> ../out/test_log.txt
         echo "TIMEOUT = $TIMEOUT" >> ../out/test_log.txt
 
-        # Capture the time it takes for the run.sh script to execute
         {
             time ./run.sh "$np" "$DELAY" "$size" "$TIMEOUT" "1" "$exe"
         } >> ../out/test_log.txt 2>&1
@@ -64,6 +64,7 @@ run_experiments() {
         python3 check.py "$allreduce_type" "$log_file"
         check=$(<"../out/check.txt")
 
+        # Increment the count if and only if there was a single kill and no error occurs
         if [[ "$check" == "True" ]]; then
             count=$((count + 1))
         fi

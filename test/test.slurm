@@ -5,8 +5,6 @@
 #SBATCH --time=12:00:00
 #SBATCH --nodes=1                # number of nodes
 #SBATCH --ntasks-per-node=64     # MPI ranks per node
-#SBATCH --partition=dcgp_usr_prod
-#SBATCH --account=IscrC_ASCEND_0
 
 run_tests() {
     NP=$1
@@ -28,10 +26,12 @@ repeats=25
 for rep in $(seq 1 $repeats); do
     echo $rep
 
+    # Run with NP = {4, 8, 16, 32, 64}
     np=4
     max_np=64
 
     while [ "$np" -le "$max_np" ]; do
+        # Buffer size from 4 Byte to 512 MB
         buf_size=1
         max_buf=134217728  
 

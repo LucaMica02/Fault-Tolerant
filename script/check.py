@@ -1,5 +1,6 @@
 import os, csv, sys
 
+# Keep the logs when some errors occours
 def append_with_separator(algo, input_file1, input_file2, input_file3, text, output_file):
     # Create the output file if it doesn't exist
     if not os.path.exists(output_file):
@@ -16,7 +17,7 @@ def append_with_separator(algo, input_file1, input_file2, input_file3, text, out
         out.write('\n' + text)
         out.write('\n' + "######################################################################")
 
-# take the parameters from test_log  
+# Take the parameters from test_log  
 def getParameters():
     DEADLOCK = False
     TIME_T = None
@@ -49,8 +50,9 @@ def getParameters():
         TIME = TIME_T
     if TIME_T > TIMEOUT:
         DEADLOCK = True
+    # Write back on "../out/check.txt" True if and only if we had one kill and no errors
     with open("../out/check.txt", "w") as f:
-        if KILLED >= 1 and KILLED <= 2 and RIGHT_RESULT == True and DEADLOCK == False:
+        if KILLED == 1 and RIGHT_RESULT == True and DEADLOCK == False:
             f.write("True")
         else:
             f.write("False")
@@ -64,7 +66,7 @@ def calcExpectedRes(N, BUF_SIZE):
     print(result, int(result))
     return int(result)
 
-# Read all the results from mpi_out
+# Read all the logs from mpi_out
 def mpiOutput(N, result):
     RIGHT_RESULT = True
     TIME = None
@@ -89,6 +91,8 @@ all_reduce_type = sys.argv[1]
 log_file = sys.argv[2]
 parameters = getParameters()
 print(parameters)
+
+# If a deadlock happens or if we have a wrong results keep the logs in a file
 if parameters[5] == True or parameters[8] == False:
     append_with_separator(all_reduce_type, "../out/mpi_out.txt", "../out/docker_out.txt", "../out/test_log.txt", str(parameters), "../out/log_errors.txt")
     print("########################### ERROR ###########################")

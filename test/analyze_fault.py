@@ -42,15 +42,21 @@ def plot_data(input_file):
                  yerr=pivot_std["STD_KILLED_1"], fmt="-o", capsize=5,
                  color="red", linewidth=2, label="KILLED=1 (avg ± std)")
 
-    plt.xlabel("N")
-    plt.ylabel("TIME")
-    plt.title("Execution TIME per N (raw + mean ± std)")
+    plt.xlabel("NP (number of processes)")
+    plt.ylabel("TIME (in seconds)")
+    plt.title("Execution TIME per NP (raw + mean ± std)")
     plt.legend()
     plt.grid(True)
+    xticks = [4, 8, 12, 16, 20, 24, 28, 32]  
+    plt.xticks(ticks=xticks, labels=xticks) 
     plt.show()
 
 # Parameters
-RD_file = "data_fault_block/log_single_RD_clean.csv"
-raben_file = "data_fault_block/log_single_Raben_clean.csv"
+RD_file = "data_fault/log_single_RD_clean.csv"
+raben_file = "data_fault/log_single_Raben_clean.csv"
+RD_file_block = "data_fault_block/log_single_RD_clean.csv"
+raben_file_block = "data_fault_block/log_single_Raben_clean.csv"
 plot_data(RD_file)
 plot_data(raben_file)
+plot_data(RD_file_block)
+plot_data(raben_file_block)

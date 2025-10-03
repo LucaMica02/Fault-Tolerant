@@ -55,11 +55,9 @@ def plot_experiment(main_csv, original_csv, label, num_xticks=8):
         ax.ticklabel_format(style='plain', axis='y')
         ax.set_xlabel("Message size")
         ax.set_ylabel("Avg time (s)")
-        ax.set_title(f"NP = {np_val} (n={len(subset)})")
+        ax.set_title(f"NP = {np_val}")
         ax.legend()
         ax.grid(True)
-
-        # Set x-ticks only to 7-8 indicative labels
         ax.set_xticks(tick_sizes)
         ax.set_xticklabels(tick_labels, rotation=45, ha="right")
 
@@ -71,7 +69,7 @@ def plot_experiment(main_csv, original_csv, label, num_xticks=8):
     plt.show()
 
 # Example usage
-plot_experiment("data/rd.csv", "data/original_rd.csv", "RD")
-plot_experiment("data/raben.csv", "data/original_raben.csv", "Raben")
-plot_experiment("data_block/rd.csv", "data_block/original_rd.csv", "RD")
-plot_experiment("data_block/raben.csv", "data_block/original_raben.csv", "Raben")
+plot_experiment("data/rd.csv", "data/original_rd.csv", "Recursive Dubling")
+plot_experiment("data/raben.csv", "data/original_raben.csv", "Rabenseifner")
+plot_experiment("data_block/rd.csv", "data_block/original_rd.csv", "Recursive Doubling")
+plot_experiment("data_block/raben.csv", "data_block/original_raben.csv", "Rabenseifner")
