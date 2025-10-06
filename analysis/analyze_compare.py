@@ -71,5 +71,3 @@ def plot_experiment(main_csv, original_csv, label, num_xticks=8):
 # Example usage
 plot_experiment("../data/data_compare/rd.csv", "../data/data_compare/original_rd.csv", "Recursive Dubling")
 plot_experiment("../data/data_compare/raben.csv", "../data/data_compare/original_raben.csv", "Rabenseifner")
-plot_experiment("../data/data_compare_block/rd.csv", "../data/data_compare_block/original_rd.csv", "Recursive Doubling")
-plot_experiment("../data/data_compare_block/raben.csv", "../data/data_compare_block/original_raben.csv", "Rabenseifner")

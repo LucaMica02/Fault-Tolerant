@@ -35,10 +35,10 @@ def clean_data(input_file, output_file):
     print(f"Saved cleaned dataset to {output_file}")
 
 # Example Usage
-RD_inp = "../data/data_fault_block/log_single_RD.csv"
-RD_out = "../data/data_fault_block/log_single_RD_clean.csv"
-Raben_inp = "../data/data_fault_block/log_single_Raben.csv"
-Raben_out = "../data/data_fault_block/log_single_Raben_clean.csv"
+RD_inp = "../data/data_fault/log_single_RD.csv"
+RD_out = "../data/data_fault/log_single_RD_clean.csv"
+Raben_inp = "../data/data_fault/log_single_Raben.csv"
+Raben_out = "../data/data_fault/log_single_Raben_clean.csv"
 
 clean_data(RD_inp, RD_out)
 clean_data(Raben_inp, Raben_out)

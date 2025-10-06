@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def plot_data(input_file):
+def plot_data(input_file, algo_name="Algorithm"):
     # Read CSV
     df = pd.read_csv(input_file, delimiter=";")
 
@@ -44,19 +44,13 @@ def plot_data(input_file):
 
     plt.xlabel("NP (number of processes)")
     plt.ylabel("TIME (in seconds)")
-    plt.title("Execution TIME per NP (raw + mean ± std)")
+    plt.title(f"{algo_name}: Execution TIME per NP (raw + mean ± std)")
     plt.legend()
     plt.grid(True)
     xticks = [4, 8, 12, 16, 20, 24, 28, 32]  
     plt.xticks(ticks=xticks, labels=xticks) 
     plt.show()
 
-# Parameters
-RD_file = "../data/data_fault/log_single_RD_clean.csv"
-raben_file = "../data/data_fault/log_single_Raben_clean.csv"
-RD_file_block = "../data/data_fault_block/log_single_RD_clean.csv"
-raben_file_block = "../data/data_fault_block/log_single_Raben_clean.csv"
-plot_data(RD_file)
-plot_data(raben_file)
-plot_data(RD_file_block)
-plot_data(raben_file_block)
+# Example usage
+plot_data("../data/data_fault/log_single_RD_clean.csv", algo_name="Recursive Doubling")
+plot_data("../data/data_fault/log_single_Raben_clean.csv", algo_name="Rabenseifner")
