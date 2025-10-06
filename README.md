@@ -21,9 +21,7 @@ If your MPI installation does not support ULFM, you can either:
 - Use a **containerized environment** (recommended for HPC clusters).  
   We use **Singularity**, as it’s widely supported in HPC systems.
 
----
-
-### 🔍 Check ULFM Support
+#### Check ULFM Support:
 
 ```bash
 cd Fault-Tolerant/sanity
@@ -52,6 +50,8 @@ singularity exec -B $HOME/local -B $TMPDIR:$TMPDIR \
 $HOME/local/mpi-ft-ulfm.sif mpirun --with-ft ulfm -n <np> ./ulfm.exe
 ```
 
+---
+
 ## 🧩 HPC Environment Checks
 
 It is recommended to navigate to the `/sanity` folder and run the `mpi_check.slurm` and `ulfm_check.slurm` scripts.  
@@ -76,7 +76,7 @@ If you want to run the tests directly with **OpenMPI**, you may need to modify t
 
 The scripts in the `/slurm` folder were used to collect the data currently available in the `/data` folder.
 
-### Running a Simple Test
+#### Running a Simple Test:
 
 1. **Compile the source code**  
 Navigate to the `src/rd` and `src/rabena` folders and compile the code using Singularity:
@@ -111,7 +111,7 @@ python3 analyze_log.py
 ```
 This provides a summary regarding deadlocks, aborts, correct results, and recovery success.
 
-### Plotting the Data
+#### Plotting the Data:
 
 To visualize performance and fault-tolerance results, you can run the following scripts:
 
