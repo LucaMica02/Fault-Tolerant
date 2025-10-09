@@ -1,52 +1,53 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import numpy as np
 
-def plot_data(input_file, algo_name="Algorithm"):
-    # Read CSV
+def plot_data_boxplot_clean(input_file, algo_name="Algorithm"):
     df = pd.read_csv(input_file, delimiter=";")
-
-    # Convert columns to numeric
     df["N"] = pd.to_numeric(df["N"], errors="coerce")
     df["KILLED"] = pd.to_numeric(df["KILLED"], errors="coerce")
     df["TIME"] = pd.to_numeric(df["TIME"], errors="coerce")
+    df = df.dropna(subset=["N", "KILLED", "TIME"])
 
-    # Group into KILLED=0 vs KILLED=1
-    df["KILLED_GROUP"] = df["KILLED"].apply(lambda x: 0 if x == 0 else 1)
+    Ns = sorted(df["N"].unique())
+    width = 0.35  # width of each box
+    positions = np.arange(len(Ns))  # base positions for each N
 
-    # Compute mean for each (N, KILLED_GROUP)
-    stats = df.groupby(["N", "KILLED_GROUP"])["TIME"].mean().reset_index()
+    # Prepare data per KILLED group
+    data0 = [df[(df["N"] == n) & (df["KILLED"] == 0)]["TIME"] for n in Ns]
+    data1 = [df[(df["N"] == n) & (df["KILLED"] == 1)]["TIME"] for n in Ns]
 
-    # Pivot for mean
-    pivot_mean = stats.pivot(index="N", columns="KILLED_GROUP", values="TIME").reset_index()
-    pivot_mean = pivot_mean.rename(columns={0: "MEAN_KILLED_0", 1: "MEAN_KILLED_1"})
+    plt.figure(figsize=(12, 6))
 
-    # ---- Plot ----
-    plt.figure(figsize=(10,6))
+    # Plot boxes side by side
+    plt.boxplot(data0, positions=positions - width/2, widths=width, patch_artist=True,
+                boxprops=dict(facecolor="#4a90e2", alpha=0.5, linewidth=1.5),
+                medianprops=dict(color="black", linewidth=1.5),
+                whiskerprops=dict(linewidth=1.2),
+                capprops=dict(linewidth=1.2))
+    
+    plt.boxplot(data1, positions=positions + width/2, widths=width, patch_artist=True,
+                boxprops=dict(facecolor="#e94e4e", alpha=0.5, linewidth=1.5),
+                medianprops=dict(color="black", linewidth=1.5),
+                whiskerprops=dict(linewidth=1.2),
+                capprops=dict(linewidth=1.2))
 
-    # Raw scatter points (all runs)
-    colors = {0: "blue", 1: "red"}
-    for group in [0, 1]:
-        subset = df[df["KILLED_GROUP"] == group]
-        plt.scatter(subset["N"], subset["TIME"], alpha=0.3, s=20,
-                    color=colors[group], label=f"KILLED={group} raw")
+    plt.xticks(positions, [str(n) for n in Ns])
+    plt.xlabel("Number of Processes (N)")
+    plt.ylabel("Execution Time (seconds)")
+    plt.title(f"{algo_name}: Execution TIME per NP (Boxplot)")
+    plt.grid(axis="y", linestyle="--", alpha=0.7)
 
-    # Mean lines (no std)
-    plt.plot(pivot_mean["N"], pivot_mean["MEAN_KILLED_0"], 
-             "-o", color="blue", linewidth=2, label="KILLED=0 mean")
+    # Legend
+    blue_patch = mpatches.Patch(color="#4a90e2", alpha=0.5, label="KILLED=0")
+    red_patch = mpatches.Patch(color="#e94e4e", alpha=0.5, label="KILLED=1")
+    plt.legend(handles=[blue_patch, red_patch], loc="upper left")
 
-    plt.plot(pivot_mean["N"], pivot_mean["MEAN_KILLED_1"], 
-             "-o", color="red", linewidth=2, label="KILLED=1 mean")
-
-    # Labels and formatting
-    plt.xlabel("NP (number of processes)")
-    plt.ylabel("TIME (in seconds)")
-    plt.title(f"{algo_name}: Execution TIME per NP (raw + mean)")
-    plt.legend()
-    plt.grid(True)
-    xticks = [4, 8, 12, 16, 20, 24, 28, 32]  
-    plt.xticks(ticks=xticks, labels=xticks) 
+    plt.tight_layout()
     plt.show()
 
+
 # Example usage
-plot_data("../data/data_fault/log_single_RD_clean.csv", algo_name="Recursive Doubling")
-plot_data("../data/data_fault/log_single_Raben_clean.csv", algo_name="Rabenseifner")
+plot_data_boxplot_clean("../data/data_fault/log_single_RD_clean.csv", algo_name="Recursive Doubling")
+plot_data_boxplot_clean("../data/data_fault/log_single_Raben_clean.csv", algo_name="Rabenseifner")

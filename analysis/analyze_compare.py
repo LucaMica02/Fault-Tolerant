@@ -15,7 +15,7 @@ def human_readable_size(size_bytes):
     else:
         return f"{size_bytes // 1024**3}GB"
 
-def plot_experiment(main_csv, original_csv, label, num_xticks=8):
+def plot_experiment_with_ratio(main_csv, original_csv, label, num_xticks=8):
     # Load CSV files
     data = pd.read_csv(main_csv, sep=";")
     original = pd.read_csv(original_csv, sep=";")
@@ -31,21 +31,22 @@ def plot_experiment(main_csv, original_csv, label, num_xticks=8):
 
     np_values = sorted(merged["NP"].unique())
     ncols = 2
-    nrows = (len(np_values) + ncols - 1) // ncols
+    # Add one extra row if needed to fit ratio plot
+    nrows = (len(np_values) + ncols) // ncols
     fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(12, 4 * nrows))
     axes = axes.flatten()
 
-    # Determine 7-8 indicative x-tick positions
+    # Determine x-ticks
     all_sizes = np.array(sorted(merged["SIZE"].unique()))
     tick_indices = np.linspace(0, len(all_sizes) - 1, num_xticks, dtype=int)
     tick_sizes = all_sizes[tick_indices]
     tick_labels = [human_readable_size(s) for s in tick_sizes]
 
+    # Plot each NP
     for i, np_val in enumerate(np_values):
         subset = merged[merged["NP"] == np_val].sort_values("SIZE")
         ax = axes[i]
 
-        # Plot all experimental points
         ax.plot(subset["SIZE"], subset[f"TIME_{label}"], marker="o", label=label)
         ax.plot(subset["SIZE"], subset["TIME_ORIGINAL"], marker="s", label=f"Original {label}")
 
@@ -61,13 +62,32 @@ def plot_experiment(main_csv, original_csv, label, num_xticks=8):
         ax.set_xticks(tick_sizes)
         ax.set_xticklabels(tick_labels, rotation=45, ha="right")
 
-    # Hide unused subplots
-    for j in range(i + 1, len(axes)):
+    # Plot ratio in the last subplot (bottom-right)
+    ratio_ax = axes[-1]
+    for np_val in np_values:
+        subset = merged[merged["NP"] == np_val].sort_values("SIZE")
+        ratio = subset[f"TIME_{label}"] / subset["TIME_ORIGINAL"]
+        ratio_ax.plot(subset["SIZE"], ratio, marker="o", label=f"NP={np_val}")
+
+
+    ratio_ax.set_xscale("log")
+    ratio_ax.set_xlabel("Message size")
+    ratio_ax.set_ylabel("Time ratio (custom / original)")
+    ratio_ax.set_title("Ratio vs Original per NP")
+    ratio_ax.grid(True, linestyle="--", alpha=0.7)
+    ratio_ax.set_xticks(tick_sizes)
+    ratio_ax.set_xticklabels(tick_labels, rotation=45, ha="right")
+    ratio_ax.legend()
+    ratio_ax.set_yticks([i for i in range(1, 10)])
+
+    # Hide any unused subplots
+    for j in range(len(np_values), len(axes)-1):
         fig.delaxes(axes[j])
 
     plt.tight_layout()
     plt.show()
 
+
 # Example usage
-plot_experiment("../data/data_compare/rd.csv", "../data/data_compare/original_rd.csv", "Recursive Dubling")
-plot_experiment("../data/data_compare/raben.csv", "../data/data_compare/original_raben.csv", "Rabenseifner")
+plot_experiment_with_ratio("../data/data_compare/rd.csv", "../data/data_compare/original_rd.csv", "Recursive Doubling")
+plot_experiment_with_ratio("../data/data_compare/raben.csv", "../data/data_compare/original_raben.csv", "Rabenseifner")
