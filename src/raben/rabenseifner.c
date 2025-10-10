@@ -164,7 +164,7 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
     wsize = count;
     sindex[0] = rindex[0] = 0;
     MPI_Barrier(*comm);
-    MPI_Comm_set_errhandler(*comm, // tolerate failure
+    MPI_Comm_set_errhandler(*comm, // Tolerate failure from now
                             MPI_ERRORS_RETURN);
 
     for (int mask = 1; mask < adjsize; mask <<= 1)
@@ -205,28 +205,27 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
             /* Send part of data from the rbuf, recv into the tmp_buf */
             if (step == 0)
             {
-                /* Send the whole buffer */
+                /* Send the whole buffer instead of just the first half just the first time */
+                err = MPI_Sendrecv(rbuf, count, dtype, dest, 0,
+                                   tmp_buf, count, dtype, dest, 0,
+                                   *comm, MPI_STATUS_IGNORE);
                 /*MPI_Request req;
                 MPI_Isend(rbuf, count, dtype, dest, 0, *comm, &req);
                 err = MPI_Recv(tmp_buf, count, dtype, dest, 0, *comm, MPI_STATUS_IGNORE);
                 MPI_Wait(&req, MPI_STATUS_IGNORE);*/
-                err = MPI_Sendrecv(rbuf, count, dtype, dest, 0,
-                                   tmp_buf, count, dtype, dest, 0,
-                                   *comm, MPI_STATUS_IGNORE);
             }
             else
             {
-                /*
-                MPI_Request req;
-                MPI_Isend((char *)rbuf + (ptrdiff_t)sindex[step] * extent,
-                          scount[step], dtype, dest, 0, *comm, &req);
-                err = MPI_Recv((char *)tmp_buf + (ptrdiff_t)rindex[step] * extent,
-                               rcount[step], dtype, dest, 0, *comm, MPI_STATUS_IGNORE);
-                MPI_Wait(&req, MPI_STATUS_IGNORE);*/
                 err = MPI_Sendrecv(
                     (char *)rbuf + (ptrdiff_t)sindex[step] * extent, scount[step], dtype, dest, 0,
                     (char *)tmp_buf + (ptrdiff_t)rindex[step] * extent, rcount[step], dtype, dest, 0,
                     *comm, MPI_STATUS_IGNORE);
+                /* MPI_Request req;
+                MPI_Isend((char *)rbuf + (ptrdiff_t)sindex[step] * extent,
+                    scount[step], dtype, dest, 0, *comm, &req);
+                err = MPI_Recv((char *)tmp_buf + (ptrdiff_t)rindex[step] * extent,
+                        rcount[step], dtype, dest, 0, *comm, MPI_STATUS_IGNORE);
+                MPI_Wait(&req, MPI_STATUS_IGNORE); */
             }
 
             if (err == MPI_SUCCESS)
@@ -250,15 +249,22 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
             }
         }
 
+        /*
+         * At each step we add a synchronization in order to check if someone
+         * inside the communicator died, in such case we need to check first
+         * if we can recovery the data lose or not, if yes we do the recovery,
+         * else we need to abort the program.
+         */
         int flag = 1;
-        MPIX_Comm_agree(*comm, &flag); // synchronization
-        err = MPI_Barrier(*comm);      // detect failure at the previous step
+        MPIX_Comm_agree(*comm, &flag); // Synchronization
+        err = MPI_Barrier(*comm);      // Detect failure at the previous step
         if (err != MPI_SUCCESS)
         {
             if (err != 75)
                 MPI_Abort(*comm, 1);
             errhandler_reduce_scatter(comm, sbuf, rbuf, tmp_buf, rindex, sindex, rcount, scount, count, steps, &wsize, &step, adjsize, vrank, nprocs_rem, step, corr, extent, dtype, op);
-            // calcutate again rank and vrank
+
+            // Calcutate again rank and vrank values
             nprocs_rem--;
             MPI_Comm_rank(*comm, &rank);
             if (rank < nprocs_rem * 2)
@@ -303,18 +309,24 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
              * Send rcount[step] elements from rbuf[rindex[step]...]
              * Recv scount[step] elements to rbuf[sindex[step]...]
              */
-            /*MPI_Request req;
-            MPI_Isend((char *)rbuf + (ptrdiff_t)rindex[step] * extent,
-                      rcount[step], dtype, dest, 0, *comm, &req);
-            MPI_Recv((char *)rbuf + (ptrdiff_t)sindex[step] * extent,
-                     scount[step], dtype, dest, 0, *comm, MPI_STATUS_IGNORE);
-            MPI_Wait(&req, MPI_STATUS_IGNORE);*/
             MPI_Sendrecv(
                 (char *)rbuf + (ptrdiff_t)rindex[step] * extent, rcount[step], dtype, dest, 0,
                 (char *)rbuf + (ptrdiff_t)sindex[step] * extent, scount[step], dtype, dest, 0,
                 *comm, MPI_STATUS_IGNORE);
+            /*MPI_Request req;
+            MPI_Isend((char *)rbuf + (ptrdiff_t)rindex[step] * extent,
+                    rcount[step], dtype, dest, 0, *comm, &req);
+            MPI_Recv((char *)rbuf + (ptrdiff_t)sindex[step] * extent,
+                    scount[step], dtype, dest, 0, *comm, MPI_STATUS_IGNORE);
+            MPI_Wait(&req, MPI_STATUS_IGNORE);*/
         }
 
+        /*
+         * At each step we add a synchronization in order to check if someone
+         * inside the communicator died, in such case we need to check first
+         * if we can recovery the data lose or not, if yes we do the recovery,
+         * else we need to abort the program.
+         */
         int flag = 1;
         MPIX_Comm_agree(*comm, &flag);
         err = MPI_Barrier(*comm);
@@ -323,6 +335,8 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
             if (err != 75)
                 MPI_Abort(*comm, 1);
             errhandler_allgather(comm, rbuf, rindex, sindex, rcount, scount, count, steps, adjsize, nprocs_rem, step, extent, dtype);
+
+            // Calcutate again rank and vrank values
             nprocs_rem--;
             MPI_Comm_rank(*comm, &rank);
             if (rank < nprocs_rem * 2)
@@ -340,7 +354,8 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
         step--;
     }
 
-    MPI_Comm_set_errhandler(*comm, // don't tolerate failure anymore
+    // Don't tolerate failure anymore
+    MPI_Comm_set_errhandler(*comm,
                             MPI_ERRORS_ARE_FATAL);
     MPI_Barrier(*comm);
 
@@ -358,10 +373,10 @@ int allreduce_rabenseifner(const void *sbuf, void *rbuf, size_t count,
         else
         {
             /* Even process -- send result to rank + 1 */
+            MPI_Send(rbuf, count, dtype, rank + 1, 0, *comm);
             /*MPI_Request req;
             MPI_Isend(rbuf, count, dtype, rank + 1, 0, *comm, &req);
             MPI_Wait(&req, MPI_STATUS_IGNORE);*/
-            MPI_Send(rbuf, count, dtype, rank + 1, 0, *comm);
         }
     }
 
@@ -387,6 +402,7 @@ int test(int buf_size, int rank, int size, MPI_Comm *comm)
     clock_t start, end;
     double difftime;
 
+    // Allocate and init the buffers
     buffer = (int *)malloc(buf_size * sizeof(int));
     result = (int *)malloc(buf_size * sizeof(int));
     for (int i = 0; i < buf_size; i++)
@@ -400,18 +416,17 @@ int test(int buf_size, int rank, int size, MPI_Comm *comm)
     end = clock();
     difftime = ((double)(end - start)) / CLOCKS_PER_SEC;
 
+    // Calculate the result
     res = 0;
     for (int i = 0; i < buf_size; i++)
     {
         res += (result[i] % 17);
     }
 
-    if (rank == 0)
-    {
-        printf("P: %d\n", size);
-        printf("Size: %d\n", buf_size);
-        printf("Time: %lf\n", difftime);
-    }
+    // Log the info
+    printf("P: %d\n", size);
+    printf("Size: %d\n", buf_size);
+    printf("Time: %lf\n", difftime);
     printf("Hello from %d of %d and the result is: %d\n", rank, size, res);
 
     if (NULL != buffer)

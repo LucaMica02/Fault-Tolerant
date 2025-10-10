@@ -57,10 +57,6 @@ void check_abort(Data *data, int *ranks_gc, int nf, int distance, MPI_Comm pworl
     k = 0;
     for (i = 0; i < data->active_ranks_count; i++)
     {
-        if (k == distance) // EDGE CASE
-        {
-            MPI_Abort(pworld, 16); // MPI_ERR_OTHER
-        }
         if (i % distance == 0) // reset the block count
         {
             k = 0;
@@ -74,11 +70,10 @@ void check_abort(Data *data, int *ranks_gc, int nf, int distance, MPI_Comm pworl
                 break;
             }
         }
-    }
-
-    if (k == distance) // last check
-    {
-        MPI_Abort(pworld, 16); // MPI_ERR_OTHER
+        if (k == distance) // EDGE CASE: all the ranks of the block are died or corrupted
+        {
+            MPI_Abort(pworld, 16); // MPI_ERR_OTHER
+        }
     }
 }
 
@@ -86,7 +81,7 @@ int is_failed(int *ranks_gc, int *ranks, int n, int m)
 {
     /*
      * Check if at least one item from ranks is also in ranks_gc
-     * --> at least one rank is failed
+     * i.e. at least one active rank is failed
      */
     for (int i = 0; i < n; i++)
     {

@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[])
 {
-    setenv("OMPI_MCA_coll_tuned_use_dynamic_rules", "1", 1);
+    setenv("OMPI_MCA_coll_tuned_use_dynamic_rules", "1", 1);   // Use dynamic rules
     setenv("OMPI_MCA_coll_tuned_allreduce_algorithm", "3", 1); // Recursive Doubling
 
     int size, rank, res;
@@ -16,6 +16,7 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    // Init the buffer
     int buf_size = atoi(argv[1]);
     int *buffer;
     int *result;
@@ -26,19 +27,23 @@ int main(int argc, char *argv[])
         buffer[i] = rank;
     }
 
+    // Run the allreduce and take the time
     start = clock();
     MPI_Allreduce(buffer, result, buf_size, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
     MPI_Barrier(MPI_COMM_WORLD);
     end = clock();
     difftime = ((double)(end - start)) / CLOCKS_PER_SEC;
 
+    // Calculate the result
     res = 0;
     for (int i = 0; i < buf_size; i++)
     {
         res += (result[i] % 17);
     }
 
-    if (rank == 0) {
+    // Log the information
+    if (rank == 0)
+    {
         printf("P: %d\n", size);
         printf("Size: %d\n", buf_size);
         printf("Time: %lf\n", difftime);

@@ -77,7 +77,6 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
     /* Active ranks send back result to inactive ones */
     if (data->active == 0)
     {
-        // waiting for result
         MPI_Recv(dst, send_size, datatype, MPI_ANY_SOURCE, 0, world_comm, MPI_STATUS_IGNORE);
     }
     else
@@ -85,7 +84,6 @@ void recursive_doubling(void *src, void *dst, int send_size, MPI_Comm world_comm
         MPI_Comm_rank(comm, &rank);
         if (rank < data->inactive_ranks_count)
         {
-            // send the result
             MPI_Send(dst, send_size, datatype, data->inactive_ranks[rank], 0, world_comm);
         }
     }
@@ -109,12 +107,15 @@ int main(int argc, char *argv[])
     int *result;
     buffer = (int *)malloc(buf_size * sizeof(int));
     result = (int *)malloc(buf_size * sizeof(int));
+
+    // Fill the buffer
     for (int i = 0; i < buf_size; i++)
     {
         buffer[i] = rank;
     }
 
     start = clock();
+    // Init the struct Data
     Data *data = (Data *)malloc(sizeof(Data));
     data->original_rank = rank;
     data->original_size = size;
@@ -123,29 +124,28 @@ int main(int argc, char *argv[])
     data->inactive_ranks_count = 0;
     data->active_ranks = (int *)malloc(sizeof(int) * data->active_ranks_count);
     data->inactive_ranks = (int *)malloc(sizeof(int));
-    data->dead_partner = -1;
     for (int i = 0; i < size; i++)
     {
         data->active_ranks[i] = i;
     }
 
+    // Call to recursive doubling
     recursive_doubling(buffer, result, buf_size, MPI_COMM_WORLD, MPI_COMM_WORLD, data, MPI_INT, MPI_SUM);
     MPI_Barrier(MPI_COMM_WORLD);
     end = clock();
     difftime = ((double)(end - start)) / CLOCKS_PER_SEC;
 
+    // Compute the result
     res = 0;
     for (int i = 0; i < buf_size; i++)
     {
         res += (result[i] % 17);
     }
 
-    if (rank == 0)
-    {
-        printf("P: %d\n", size);
-        printf("Size: %d\n", buf_size);
-        printf("Time: %lf\n", difftime);
-    }
+    // Log the info
+    printf("P: %d\n", size);
+    printf("Size: %d\n", buf_size);
+    printf("Time: %lf\n", difftime);
     printf("Hello from %d of %d and the result is: %d\n", data->original_rank, data->original_size, res);
 
     if (data->inactive_ranks != NULL)

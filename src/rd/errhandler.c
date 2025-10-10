@@ -10,7 +10,7 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
     int i, j, k, rank, size, nf, p, total_count, block_count, to_recv, wk_up,
         corr, err, inactive_nf, to_send_size, to_wk_up_size;
     MPI_Group group_c, group_f, group_survivors;
-    int *ranks_gc, *ranks_gf, *block_masters, *to_send, *to_wk_up;
+    int *ranks_gc, *ranks_gf, *to_send, *to_wk_up;
 
     data->master = 0;
     to_recv = -1;
@@ -67,7 +67,7 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
     /* Check if an active rank is failed */
     if (is_failed(ranks_gc, data->active_ranks, nf, data->active_ranks_count))
     {
-        /* Check if all the process in one block are failed */
+        /* Check if all the process in one block are failed or corrupted */
         if ((nf - inactive_nf) >= (*distance / 2)) // we check the fault at the previous iteration
         {
             check_abort(data, ranks_gc, nf, *distance, *pworld); // EDGE CASE
@@ -94,7 +94,6 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
 
             /* Find the master rank for every block */
             j = 0;
-            block_masters = (int *)malloc((data->active_ranks_count / (*distance / 2)) * sizeof(int));
             if (data->active == 1)
                 MPI_Comm_rank(*pcomm, &rank);
             /* The first alive and not corrupted rank for every block will be the master */
@@ -107,7 +106,6 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
                     {
                         data->master = 1;
                     }
-                    block_masters[j++] = data->active_ranks[i];
                     i = ((*distance / 2) * j) - 1;
                 }
             }
@@ -175,7 +173,6 @@ void errhandler(MPI_Comm *pworld, MPI_Comm *pcomm, int *distance, int *src, int 
             }
             data->inactive_ranks_count = j + 1;
             data->inactive_ranks = (int *)realloc(data->inactive_ranks, data->inactive_ranks_count * sizeof(int));
-            free(block_masters);
             free(killed_idxs);
         }
         else // we don't have enough inactive ranks

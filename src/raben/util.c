@@ -15,8 +15,7 @@ ptrdiff_t datatype_span(MPI_Datatype dtype, size_t count, ptrdiff_t *gap)
     MPI_Type_get_extent(dtype, &lb, &extent);
     MPI_Type_get_true_extent(dtype, &true_lb, &true_extent);
 
-    *gap = true_lb; // Store the true lower bound
-
+    *gap = true_lb;                            // Store the true lower bound
     return true_extent + extent * (count - 1); // Calculate the total memory span
 }
 
@@ -38,7 +37,7 @@ int hibit(int value, int start)
 }
 
 int copy_buffer(const void *input_buffer, void *output_buffer,
-                              size_t count, const MPI_Datatype datatype)
+                size_t count, const MPI_Datatype datatype)
 {
     if ((input_buffer == NULL || output_buffer == NULL || count <= 0))
     {

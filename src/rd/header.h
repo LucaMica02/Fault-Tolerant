@@ -23,7 +23,6 @@ typedef struct
     int original_rank;
     int original_size;
     int master;
-    int dead_partner;
 } Data;
 
 /* General implementation of recursive doubling allreduce with fault tolerance */
@@ -41,7 +40,7 @@ int contains(int *array, int target, int n);
 /* Edge cases check, check if all the ranks in a block are died or corrupted, in such cases abort the comm */
 void check_abort(Data *data, int *ranks_gc, int nf, int distance, MPI_Comm pworld);
 
-/* Check if a rank in ranks is also in ranks_gc */
+/* Check if exists a rank that is in both ranks and ranks_gc */
 int is_failed(int *ranks_gc, int *ranks, int n, int m);
 
 #endif

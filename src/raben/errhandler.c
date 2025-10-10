@@ -1,7 +1,7 @@
 #include "header.h"
 
 int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf, const void *tmp_buf, int *rindex, int *sindex, int *rcount, int *scount,
-               int count, int steps, int *pwsize, int *pstep, int adjsize, int vrank, int nprocs_rem, int failed_step, int corr, ptrdiff_t extent, MPI_Datatype dtype, MPI_Op op)
+                              int count, int steps, int *pwsize, int *pstep, int adjsize, int vrank, int nprocs_rem, int failed_step, int corr, ptrdiff_t extent, MPI_Datatype dtype, MPI_Op op)
 {
     int rank, size, err, nf, original_partner, step, wsize, vdead, dead;
     int *ranks_gc, *ranks_gf, *group_ranks;
@@ -12,8 +12,8 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
     MPI_Comm_rank(*comm, &rank);
     MPI_Comm_size(*comm, &size);
 
-    MPIX_Comm_agree(*comm, &err); // synchronization
-    MPI_Comm_set_errhandler(*comm, // don't allow fault tolerance here
+    MPIX_Comm_agree(*comm, &err);  // Synchronization
+    MPI_Comm_set_errhandler(*comm, // Don't allow fault tolerance here
                             MPI_ERRORS_ARE_FATAL);
 
     /* Check which ranks are failed */
@@ -30,15 +30,35 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
     MPI_Group_translate_ranks(group_f, nf, ranks_gf,
                               group_c, ranks_gc);
 
-    // don't allow multiple failure
+    /*
+     * We support maximum one failure
+     * We can't support failure in the first step
+     */
     if (nf > 1 || failed_step == 0)
         MPI_Abort(*comm, 1);
     dead = ranks_gc[0];
 
-    // edge case: rank idle die
+    /*
+     * Edge case: an idle rank has died.
+     * In this case, we need to adjust the communicator structure.
+     * Otherwise, we would compute the rank of the original partner of the dead rank.
+     * This partner still holds the original data, effectively impersonating the dead rank,
+     * which would cause us to redo the reduce-scatter computation involving
+     * ONLY the communication originally done by the dead rank up to the point
+     * in which the fail occours.
+     */
     int rank_idle_die = (dead < nprocs_rem * 2 && dead % 2 == 1) ? 1 : 0;
     if (rank_idle_die)
     {
+        /*
+         * Restore the ranks in the communicator:
+         * the last rank replaces the rank of the idle one
+         * that just died.
+         * This is necessary because we cannot simply shift the ranks,
+         * since only the even ranks participate in the computation.
+         * If we shifted all even ranks with values greater than the dead rank,
+         * some would become odd and vice versa, breaking the algorithm.
+         */
         int last_rank_idle = nprocs_rem * 2 - 1;
         group_ranks = (int *)malloc((size - nf) * sizeof(int));
         int k = 0;
@@ -56,6 +76,7 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
     }
     else
     {
+        // First we need to compute the original partner
         if (dead < nprocs_rem * 2)
         {
             if (dead % 2 == 0)
@@ -67,6 +88,8 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
         }
         int v_org_partner = vdead ^ 1;
         original_partner = (v_org_partner < nprocs_rem) ? v_org_partner * 2 : v_org_partner + nprocs_rem;
+
+        // The original partner will impersonate the died rank and redo the reduce-scatter
         if (rank == original_partner)
         {
             rank = dead;
@@ -119,6 +142,7 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
 
             if (rank == dead && step != 0)
             {
+                // At every step we need to receive the dead from the partner of the corrispettive step
                 MPI_Recv((char *)tmp_buf + (ptrdiff_t)rindex[step] * extent, rcount[step], dtype, dest, 0, *comm, MPI_STATUS_IGNORE);
 
                 /* Local reduce: sbuf[] = tmp_buf[] <op> rbuf[] */
@@ -126,6 +150,7 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
                                  (char *)sbuf + (ptrdiff_t)rindex[step] * extent,
                                  rcount[step], dtype, op);
 
+                // Only if is the step in which the rank previously failed, we need to send the data as well
                 if (step == failed_step)
                 {
                     MPI_Send((char *)sbuf + (ptrdiff_t)sindex[step] * extent, scount[step], dtype, dest, 0, *comm);
@@ -133,6 +158,12 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
             }
             else if (dest == dead && step != 0)
             {
+                /*
+                 * If you are the partner of the step send the data
+                 * Only if it is the last step we need to receive as well
+                 * Only if we are corrupted i.e. we didn't received the data in the
+                 * last step, we compute the local reduction, else just ignore the data received
+                 */
                 MPI_Request req;
                 MPI_Isend((char *)rbuf + (ptrdiff_t)sindex[step] * extent, scount[step], dtype, original_partner, 0, *comm, &req);
                 MPI_Wait(&req, MPI_STATUS_IGNORE);
@@ -164,12 +195,21 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
                                  (char *)sbuf + (ptrdiff_t)rindex[step] * extent,
                                  rcount[step], dtype, op);
             }
-            if ((mask << 1) < adjsize) step++;
+            if ((mask << 1) < adjsize)
+                step++;
         }
 
+        /*
+         * If we are the original partner we need now to send the result computed so far
+         * as well as all the offset computed to the new entry i.e. the rank that will
+         * replace the died one from now forward
+         */
         int new_entry = (nprocs_rem * 2) - 1;
+
+        // If we don't have any idle rank available just abort
         if (new_entry == -1)
             MPI_Abort(*comm, 1);
+
         if (rank == dead)
         {
             MPI_Send(rindex, steps, MPI_INT, new_entry, 0, *comm);
@@ -199,6 +239,16 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
             MPI_Recv(pstep, 1, MPI_INT, original_partner, 0, *comm, MPI_STATUS_IGNORE);
             MPI_Recv(pwsize, 1, MPI_INT, original_partner, 0, *comm, MPI_STATUS_IGNORE);
         }
+
+        /*
+         * Restore the ranks in the communicator:
+         * the last rank replaces the rank of the idle one
+         * that just died.
+         * This is necessary because we cannot simply shift the ranks,
+         * since only the even ranks participate in the computation.
+         * If we shifted all even ranks with values greater than the dead rank,
+         * some would become odd and vice versa, breaking the algorithm.
+         */
         group_ranks = (int *)malloc((size - nf) * sizeof(int));
         int k = 0;
         for (int i = 0; i < size; i++)
@@ -218,20 +268,21 @@ int errhandler_reduce_scatter(MPI_Comm *comm, const void *sbuf, const void *rbuf
         }
     }
 
+    // Create the new communicator
     MPI_Comm nc;
     MPIX_Comm_shrink(*comm, &nc);
     MPI_Comm_group(*comm, &group_c);
     MPI_Group_incl(group_c, size - nf, group_ranks, &group_surv);
     MPI_Comm_create(nc, group_surv, &new_comm);
     *comm = new_comm;
-    MPI_Comm_set_errhandler(*comm, // tolerate the failure again
+    MPI_Comm_set_errhandler(*comm, // Tolerate the failure again
                             MPI_ERRORS_RETURN);
     MPI_Barrier(*comm);
     return 0;
 }
 
 int errhandler_allgather(MPI_Comm *comm, const void *rbuf, int *rindex, int *sindex, int *rcount, int *scount,
-               int count, int steps, int adjsize, int nprocs_rem, int failed_step, ptrdiff_t extent, MPI_Datatype dtype)
+                         int count, int steps, int adjsize, int nprocs_rem, int failed_step, ptrdiff_t extent, MPI_Datatype dtype)
 {
     int rank, size, err, nf, original_partner, vdead, dead;
     int *ranks_gc, *ranks_gf, *group_ranks;
@@ -272,10 +323,24 @@ int errhandler_allgather(MPI_Comm *comm, const void *rbuf, int *rindex, int *sin
     }
     dead = ranks_gc[0];
 
-    // edge case: rank idle die
+    /*
+     * Edge case: an idle rank has died.
+     * In this case, we need to adjust the communicator structure.
+     * Otherwise, we need to calculate the original partner and it will be responsible
+     * for send the data to the new entry rank.
+     */
     int rank_idle_die = (dead < nprocs_rem * 2 && dead % 2 == 1) ? 1 : 0;
     if (rank_idle_die)
     {
+        /*
+         * Restore the ranks in the communicator:
+         * the last rank replaces the rank of the idle one
+         * that just died.
+         * This is necessary because we cannot simply shift the ranks,
+         * since only the even ranks participate in the computation.
+         * If we shifted all even ranks with values greater than the dead rank,
+         * some would become odd and vice versa, breaking the algorithm.
+         */
         int last_rank_idle = nprocs_rem * 2 - 1;
         group_ranks = (int *)malloc((size - nf) * sizeof(int));
         int k = 0;
@@ -297,25 +362,25 @@ int errhandler_allgather(MPI_Comm *comm, const void *rbuf, int *rindex, int *sin
         {
             if (dead % 2 == 0)
                 vdead = dead / 2;
-            // else was idle
         }
         else
         {
             vdead = dead - nprocs_rem;
         }
 
+        // Calculate the original partner and the new entry ranks
         int v_org_partner = vdead ^ (adjsize >> 1);
         original_partner = (v_org_partner < nprocs_rem) ? v_org_partner * 2 : v_org_partner + nprocs_rem;
         int new_entry = (nprocs_rem * 2) - 1;
 
-        // no rank idle available
+        // No rank idle available, just abort
         if (new_entry == -1)
             MPI_Abort(*comm, 1);
 
-        // send data to new entry
+        // Send data to new entry
         if (rank == original_partner)
         {
-            // send the buffer and the offsets
+            // Send the buffer and the offsets
             MPI_Send(rbuf, count, dtype, new_entry, 0, *comm);
             MPI_Send(rindex, steps, MPI_INT, new_entry, 0, *comm);
             MPI_Send(sindex, steps, MPI_INT, new_entry, 0, *comm);
@@ -324,7 +389,7 @@ int errhandler_allgather(MPI_Comm *comm, const void *rbuf, int *rindex, int *sin
         }
         else if (rank == new_entry)
         {
-            // recv the buffer and the offsets
+            // Recv the buffer and the offsets
             MPI_Recv(rbuf, count, dtype, original_partner, 0, *comm, MPI_STATUS_IGNORE);
             MPI_Recv(rindex, steps, MPI_INT, original_partner, 0, *comm, MPI_STATUS_IGNORE);
             MPI_Recv(sindex, steps, MPI_INT, original_partner, 0, *comm, MPI_STATUS_IGNORE);
@@ -332,22 +397,31 @@ int errhandler_allgather(MPI_Comm *comm, const void *rbuf, int *rindex, int *sin
             MPI_Recv(scount, steps, MPI_INT, original_partner, 0, *comm, MPI_STATUS_IGNORE);
         }
 
-        // recovery of corr data if necessary
+        // Recovery of corrupted data if necessary
         int v_last_partner = vdead ^ (1 << failed_step);
         int last_partner = (v_last_partner < nprocs_rem) ? v_last_partner * 2 : v_last_partner + nprocs_rem;
         if (rank == new_entry)
         {
-            // send the data
+            // Send the data
             MPI_Send((char *)rbuf + (ptrdiff_t)rindex[failed_step] * extent,
                      rcount[failed_step], dtype, last_partner, 0, *comm);
         }
         else if (rank == last_partner)
         {
-            // recv data
+            // Recv data
             MPI_Recv((char *)rbuf + (ptrdiff_t)sindex[failed_step] * extent,
                      scount[failed_step], dtype, new_entry, 0, *comm, MPI_STATUS_IGNORE);
         }
 
+        /*
+         * Restore the ranks in the communicator:
+         * the last rank replaces the rank of the idle one
+         * that just died.
+         * This is necessary because we cannot simply shift the ranks,
+         * since only the even ranks participate in the computation.
+         * If we shifted all even ranks with values greater than the dead rank,
+         * some would become odd and vice versa, breaking the algorithm.
+         */
         group_ranks = (int *)malloc((size - nf) * sizeof(int));
         int k = 0;
         for (int i = 0; i < size; i++)
@@ -367,6 +441,7 @@ int errhandler_allgather(MPI_Comm *comm, const void *rbuf, int *rindex, int *sin
         }
     }
 
+    // Create the new communicator
     MPI_Comm nc;
     MPIX_Comm_shrink(*comm, &nc);
     MPI_Comm_group(*comm, &group_c);
@@ -374,6 +449,7 @@ int errhandler_allgather(MPI_Comm *comm, const void *rbuf, int *rindex, int *sin
     MPI_Comm_create(nc, group_surv, &new_comm);
     *comm = new_comm;
 
+    // Cleanup
     MPI_Group_free(&group_surv);
     MPI_Group_free(&group_c);
     MPI_Group_free(&group_f);
@@ -385,7 +461,7 @@ int errhandler_allgather(MPI_Comm *comm, const void *rbuf, int *rindex, int *sin
         free(group_ranks);
     MPI_Comm_free(&nc);
 
-    MPI_Comm_set_errhandler(*comm, // tolerate the failure again
+    MPI_Comm_set_errhandler(*comm, // Tolerate the failure again
                             MPI_ERRORS_RETURN);
     MPI_Barrier(*comm);
     return 0;
