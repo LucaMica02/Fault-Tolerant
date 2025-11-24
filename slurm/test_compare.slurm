@@ -24,7 +24,7 @@ run_tests() {
     python3 ../analysis/check_compare.py
 }
 
-repeats=25
+repeats=50
 
 for rep in $(seq 1 $repeats); do
     echo $rep

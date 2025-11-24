@@ -10,6 +10,7 @@ def plot_data_boxplot_clean(input_file, algo_name="Algorithm"):
     df["TIME"] = pd.to_numeric(df["TIME"], errors="coerce")
     df = df.dropna(subset=["N", "KILLED", "TIME"])
 
+    df = df[df["TIME"] < 5]
     Ns = sorted(df["N"].unique())
     width = 0.35  # width of each box
     positions = np.arange(len(Ns))  # base positions for each N
@@ -20,30 +21,52 @@ def plot_data_boxplot_clean(input_file, algo_name="Algorithm"):
 
     plt.figure(figsize=(12, 6))
 
-    # Plot boxes side by side
+    meanprops = dict(marker='D', markeredgecolor='black', markerfacecolor='black', markersize=7)
+
+    """
+    # Print full dataset
+    grouped = df.groupby(["N", "KILLED"])["TIME"].agg(["count", "mean", "median", "std", "max"])
+    print(f"\n=== Summary per N & KILLED for {algo_name} ===")
+    print(grouped.to_string(float_format="{:.3f}".format))
+    """
+
+    # Plot boxes side by side with mean
     plt.boxplot(data0, positions=positions - width/2, widths=width, patch_artist=True,
-                boxprops=dict(facecolor="#4a90e2", alpha=0.5, linewidth=1.5),
+                showmeans=True, meanprops=meanprops,
+                boxprops=dict(facecolor="#1f77b4", alpha=0.8, linewidth=1.5),
                 medianprops=dict(color="black", linewidth=1.5),
                 whiskerprops=dict(linewidth=1.2),
                 capprops=dict(linewidth=1.2))
     
     plt.boxplot(data1, positions=positions + width/2, widths=width, patch_artist=True,
-                boxprops=dict(facecolor="#e94e4e", alpha=0.5, linewidth=1.5),
+                showmeans=True, meanprops=meanprops,
+                boxprops=dict(facecolor="#ff7f0e", alpha=0.8, linewidth=1.5),
                 medianprops=dict(color="black", linewidth=1.5),
                 whiskerprops=dict(linewidth=1.2),
                 capprops=dict(linewidth=1.2))
 
     plt.xticks(positions, [str(n) for n in Ns])
-    plt.xlabel("Number of Processes (N)")
+    plt.xlabel("Number of Processes (NP)")
     plt.ylabel("Execution Time (seconds)")
-    plt.title(f"{algo_name}: Execution TIME per NP (Boxplot)")
-    plt.grid(axis="y", linestyle="--", alpha=0.7)
+    plt.title(f"{algo_name} Runtime: Zero vs One Killed Process")
+    plt.yscale("log")
+    #plt.grid(axis="y", linestyle="--", alpha=0.7)
 
     # Legend
-    blue_patch = mpatches.Patch(color="#4a90e2", alpha=0.5, label="KILLED=0")
-    red_patch = mpatches.Patch(color="#e94e4e", alpha=0.5, label="KILLED=1")
+    blue_patch = mpatches.Patch(color="#1f77b4", alpha=0.8, label="Without Failures")
+    red_patch = mpatches.Patch(color="#ff7f0e", alpha=0.8, label="With Failures")
     plt.legend(handles=[blue_patch, red_patch], loc="upper left")
 
+    # Add explanation text box
+    explanation_text = (
+        "Box: 25th-75th percentile (IQR)\n"
+        "Black line: Median\n"
+        "Black diamond: Mean\n"
+        "Whiskers: min/max within 1.5*IQR\n"
+        "Circles: Outliers / raw data points"
+    )
+    plt.gcf().text(0.80, 0.12, explanation_text, fontsize=9,
+                   bbox=dict(facecolor='white', alpha=0.7, edgecolor='black'))
     plt.tight_layout()
     plt.show()
 

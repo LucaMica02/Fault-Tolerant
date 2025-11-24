@@ -1,7 +1,7 @@
 import csv
+import random
 
-def clean_data(input_file, output_file):
-    Ns = [4, 8, 16, 32]
+def clean_data(input_file, output_file, Ns):
     samples_per_class = 50
 
     # Read data
@@ -20,8 +20,10 @@ def clean_data(input_file, output_file):
         print(f"For N = {N}; killed_0 size = {len(killed_0)}; killed_1 size = {len(killed_1)}")
 
         # Take the first 50 from each group
-        sampled_0 = killed_0[:samples_per_class]
-        sampled_1 = killed_1[:samples_per_class]
+        
+        random.seed(42)
+        sampled_0 = random.sample(killed_0, min(samples_per_class, len(killed_0)))
+        sampled_1 = random.sample(killed_1, min(samples_per_class, len(killed_1)))
 
         filtered.extend(sampled_0)
         filtered.extend(sampled_1)
@@ -40,5 +42,5 @@ RD_out = "../data/data_fault/log_single_RD_clean.csv"
 Raben_inp = "../data/data_fault/log_single_Raben.csv"
 Raben_out = "../data/data_fault/log_single_Raben_clean.csv"
 
-clean_data(RD_inp, RD_out)
-clean_data(Raben_inp, Raben_out)
+clean_data(RD_inp, RD_out, [4, 6, 8, 12, 16, 24, 32])
+clean_data(Raben_inp, Raben_out, [5, 9, 17, 33, 60])

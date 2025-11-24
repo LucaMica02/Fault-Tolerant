@@ -29,6 +29,17 @@ def plot_experiment_with_ratio(main_csv, original_csv, label, num_xticks=8):
         data_avg, original_avg, on=["NP", "SIZE"], suffixes=(f"_{label}", "_ORIGINAL")
     )
 
+    """
+    # Print full dataset
+    merged[f"RATIO_{label}"] = merged[f"TIME_{label}"] / merged["TIME_ORIGINAL"]
+    print(f"\nMerged dataset with ratios for {label}:")
+    print(merged.to_string(index=False))
+    """
+
+    # Filter NP values you want to plot
+    selected_NP = [4, 8, 16, 32, 64]
+    merged = merged[merged["NP"].isin(selected_NP)]
+
     np_values = sorted(merged["NP"].unique())
     ncols = 2
     # Add one extra row if needed to fit ratio plot
@@ -52,9 +63,9 @@ def plot_experiment_with_ratio(main_csv, original_csv, label, num_xticks=8):
 
         ax.set_xscale("log")
         ax.set_yscale("log")
-        ax.yaxis.set_major_formatter(ScalarFormatter())
-        ax.ticklabel_format(style='plain', axis='y')
-        ax.set_xlabel("Message size")
+        #ax.yaxis.set_major_formatter(ScalarFormatter())
+        #ax.ticklabel_format(style='plain', axis='y')
+        ax.set_xlabel("\n\n\nMessage size")
         ax.set_ylabel("Avg time (s)")
         ax.set_title(f"NP = {np_val}")
         ax.legend()
@@ -86,7 +97,6 @@ def plot_experiment_with_ratio(main_csv, original_csv, label, num_xticks=8):
 
     plt.tight_layout()
     plt.show()
-
 
 # Example usage
 plot_experiment_with_ratio("../data/data_compare/rd.csv", "../data/data_compare/original_rd.csv", "Recursive Doubling")
